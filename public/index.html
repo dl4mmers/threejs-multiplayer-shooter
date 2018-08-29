@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+  <head>
+    <title>ThreeJS Game</title>
+
+    <!-- Bootstrap 4 and other css -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+
+  <!-- Body -->
+  <body>
+
+    <!-- Username Layer -->
+    <div class="username-layer">
+      <div class="container" style="text-align: center;">
+      <form id="username-form" action="" style="margin-top: 40%">
+        <h1 class="display-1">ThreeJS Game</h1>
+        <div class="form-group row">
+          <div class="col-md-3"></div>
+          <div class="col-md-4" style="padding: 0px 0px 0px 15px">
+            <input id="username" autocomplete="off" class="form-control form-control-lg" type="text" placeholder="Gib deinen Nickname ein">
+          </div>
+          <div class="col-md-2" style="padding: 0px 15px 0px 0px">
+            <button class="btn btn-primary btn-lg" style="width: 100%">Send</button>
+          </div>
+          <div class="col-md-3"></div>
+        </div>
+        <div class="row">
+          <div class="col-md-3"></div>
+          <div class="col-md-6"><div id="warning" class="alert alert-danger" role="alert"></div></div>
+          <div class="col-md-3"></div>
+        </div>
+      </form>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-window" style="padding: 25px 25px 25px 25px">
+      <ul id="messages" class="list-unstyled" style="overflow-y: auto;"></ul>
+      <form id="chat-form" action="" style="margin-top: auto;">
+      <div class="form-group row">
+        <div class="col-sm-10" style="padding: 0px 0px 0px 15px">
+          <input id="m" autocomplete="off" class="form-control form-control-sm" type="text" placeholder="Deine Nachricht...">
+        </div>
+        <div class="col-sm-2" style="padding: 0px 15px 0px 0px">
+          <button class="btn btn-primary btn-sm" style="width: 100%">Send</button>
+        </div>
+      </div>
+      </form>
+    </div>
+
+  <!-- Dependencies-->
+  <script src="../socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="js/three.js"></script>
+  <script src="js/PointerLockControls.js"></script>
+  <script src="js/TrackballControls.js"></script>
+
+  <!-- Game and Client -->
+  <script src="js/game.js"></script>
+  <script src="js/client.js"></script>
+
+  </body>
+</html>
