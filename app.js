@@ -22,7 +22,7 @@ app.get('/', function(req, res){
 server.lastPlayerID = 0;
 
 // Open port
-server.listen(3000, '192.168.137.60' ,function(){
+server.listen(3000, 'localhost' ,function(){
   console.log('listening on *:3000');
 });
 
