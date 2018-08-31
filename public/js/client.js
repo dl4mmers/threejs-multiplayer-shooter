@@ -129,7 +129,7 @@ Client.socket.on('remove', function(id){
 
 // Socket Event => Get All Players
 Client.socket.on('allplayers',function(data) {
-	console.log(data);
+	//console.log(data);
 
 	var playerString = "";
 	if(data.allPlayers.length != 0)
@@ -167,6 +167,7 @@ Client.socket.on('deleteallplayers', function() {
 	// recreate level
 	Game.createFloor();
 	Game.createLight();
+	Game.createLevel();
 
 	Game.animate();
 });

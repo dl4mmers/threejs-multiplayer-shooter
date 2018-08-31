@@ -30,7 +30,7 @@ Game.prevTime = performance.now();
 Game.init = function() {
 
 	// Camera
-	Game.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 1000 );
+	Game.camera = new THREE.PerspectiveCamera( 65, window.innerWidth/window.innerHeight, 0.01, 10000 );
 	Game.camera.position.y = 60;
 	Game.camera.position.z = 220;
 
@@ -59,9 +59,88 @@ Game.init = function() {
 
 	// Resize
 	window.addEventListener( 'resize', Game.onWindowResize, false );
+
+	//Animation
+	Game.mixers=[];
 };
 
 Game.createLevel = function(){
+	var loader = new THREE.JDLoader();
+	loader.load("../models/model.jd", 
+            function (data)
+            {                            
+                for (var i = 0; i < data.objects.length; ++i)
+                {
+                    if (data.objects[i].type == "Mesh" || data.objects[i].type == "SkinnedMesh")
+                    {
+                    	var meshes=[];
+                        var mesh = null;
+                        var matArray = Game.createMaterials(data);
+                        if (data.objects[i].type == "SkinnedMesh")
+                        {
+                            mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
+                            console.log(mesh);
+                        }
+                        else // Mesh
+                        {
+                            mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
+                        }
+                        meshes.push(mesh);
+                        Game.scene.add(mesh);
+ 
+                        //Now we need THREE.AnimationMixer to play the animation.
+                        if (mesh && mesh.geometry.animations)
+                        {
+                            var mixer = new THREE.AnimationMixer(mesh);
+                            Game.mixers.push(mixer);
+                            var action = mixer.clipAction( mesh.geometry.animations[0] );
+                            action.play();
+                        }
+                    }
+                    else if (data.objects[i].type == "Line")
+                    {
+                        var jd_color = data.objects[i].jd_object.color;
+                        var color1 = new THREE.Color( jd_color[0] / 255, jd_color[1] / 255, jd_color[2] / 255 );
+                        var material = new THREE.LineBasicMaterial({ color: color1}); 
+                        var line = new THREE.Line(data.objects[i].geometry, material);
+                        Game.scene.add(line);
+ 
+                        if (line.geometry.animations)
+                        {                                        
+                            var mixer = new THREE.AnimationMixer(line);
+                            Game.mixers.push(mixer);                                        
+                            var action = mixer.clipAction(line.geometry.animations[0]);
+                            action.play();
+                        }
+                    }
+                }        
+            });
+
+/*
+					//3ds files dont store normal maps
+				var loader = new THREE.TextureLoader();
+				//var normal = loader.load( 'models/3ds/portalgun/textures/normal.jpg' );
+
+				var loader = new THREE.TDSLoader( );
+				loader.setPath( '../models/' );
+				loader.load( '../models/model.3ds', function ( object ) {
+
+					object.traverse( function ( child ) {
+
+						if ( child instanceof THREE.Mesh ) {
+
+							//child.material.normalMap = normal;
+						}
+
+					} );
+
+					Game.scene.add( object );
+				});
+			
+
+*/
+
+	/*
 
 	// instantiate a loader
 	var loader = new THREE.JSONLoader();
@@ -88,9 +167,24 @@ Game.createLevel = function(){
 			console.log( 'An error happened' );
 		}
 	);
-	
+	*/
 
 }
+
+Game.createMaterials=function(data)
+        {
+            var matArray = [];
+            for (var j = 0; j < data.materials.length; ++j)
+            {
+                var mat = new THREE.MeshPhongMaterial({});
+                mat.copy(data.materials[j]);
+                mat.side = THREE.DoubleSide;
+
+                //mat.transparent = true;
+                matArray.push(mat);
+            }
+            return matArray;
+        }
 
 Game.createFloor = function() {
 
@@ -203,24 +297,28 @@ Game.clearScene = function(obj) {
 
 Game.animate = function () {
 
-	requestAnimationFrame( Game.animate );
 
-	if ( Game.controlsEnabled === true ) {
+
 		
 		// delta time
 		var time = performance.now();
 		var delta = ( time - Game.prevTime ) / 1000;
-
-		// calc movement and push on socket
-		Client.calcMovement(delta);
-
-		console.log(Game.controls.getObject().position);
+		if ( Game.controlsEnabled === true ) {
+			// calc movement and push on socket
+			Client.calcMovement(delta);
+		}
 
 		// time
 		Game.prevTime = time;
-	}
+		for (var i = 0; i < Game.mixers.length; ++i){
+	    	Game.mixers[i].update(delta); 
+			// ... the rest of your code
+		}
+
+
 
 	Game.renderer.render( Game.scene, Game.camera );
+	requestAnimationFrame( Game.animate );
 };
 
 Game.onWindowResize = function() {
