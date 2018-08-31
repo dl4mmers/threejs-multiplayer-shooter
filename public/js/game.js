@@ -49,6 +49,7 @@ Game.init = function() {
 	// Level
 	Game.createFloor();
 	Game.createLight();
+	Game.createLevel();
 
 	// Renderer
 	Game.renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -59,6 +60,37 @@ Game.init = function() {
 	// Resize
 	window.addEventListener( 'resize', Game.onWindowResize, false );
 };
+
+Game.createLevel = function(){
+
+	// instantiate a loader
+	var loader = new THREE.JSONLoader();
+
+	// load a resource
+	loader.load(
+		// resource URL
+			"../models/model.js",
+
+		// onLoad callback
+		function ( geometry, materials ) {
+			var material = materials[ 0 ];
+			var object = new THREE.Mesh( geometry, material );
+				Game.scene.add( object );
+		},
+
+		// onProgress callback
+		function ( xhr ) {
+			console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+		},
+
+		// onError callback
+		function( err ) {
+			console.log( 'An error happened' );
+		}
+	);
+	
+
+}
 
 Game.createFloor = function() {
 
