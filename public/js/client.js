@@ -45,7 +45,7 @@ $("#username-form").submit(function() {
 	createPointerLockControls();
 
 	// KeyboardListeners
-	addKeyListeners();
+	//addKeyListeners();
 
     return false;
   }
@@ -159,14 +159,15 @@ Client.socket.on('deleteallplayers', function() {
 
 	// clear controls
 	delete Game.controls;
-	Game.controls = new THREE.PointerLockControls( Game.camera );
+	Game.controls = new PointerLockControls( Game.camera, Game.sphereBody );
 	Game.scene.add( Game.controls.getObject() );
-	Game.camera.position.set(0, 10, 0);
+	Game.camera.position.set(0, 0, 0);
 	//Game.controls.getObject().position.set(0, 0, 0);
 
 	// recreate level
 	Game.createFloor();
 	Game.createLight();
+	Game.createBoxes();
 
 	Game.animate();
 });
@@ -177,9 +178,6 @@ Client.socket.on('deleteallplayers', function() {
 
 // Pointerlock (FPS) Controls
 function createPointerLockControls() {
-
-	
-
 
 	// create blocker and instruction divs
 	jQuery('<div/>', {
@@ -278,6 +276,8 @@ function createPointerLockControls() {
 }
 
 // Keyboard Listeners
+
+/*
 function addKeyListeners() {
 
 	var onKeyDown = function ( event ) {
@@ -325,6 +325,8 @@ function addKeyListeners() {
 	document.addEventListener( 'keyup', onKeyUp, false );
 
 }
+*/
+
 
 // Push movement data on socket
 Client.calcMovement = function(delta) {
