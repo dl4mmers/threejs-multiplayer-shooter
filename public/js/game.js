@@ -182,7 +182,9 @@ Game.animate = function () {
 		// calc movement and push on socket
 		Client.calcMovement(delta);
 
-		console.log(Game.controls.getObject().position);
+		//console.log(Game.controls.getObject().position);
+		var dir = Game.controls.getDirection(new THREE.Vector3(0, 0, 0)).clone();
+		console.log(dir.x + " | " + dir.y + " | " + dir.z);
 
 		// time
 		Game.prevTime = time;
