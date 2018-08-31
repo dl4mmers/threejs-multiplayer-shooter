@@ -115,60 +115,6 @@ Game.createLevel = function(){
                     }
                 }        
             });
-
-/*
-					//3ds files dont store normal maps
-				var loader = new THREE.TextureLoader();
-				//var normal = loader.load( 'models/3ds/portalgun/textures/normal.jpg' );
-
-				var loader = new THREE.TDSLoader( );
-				loader.setPath( '../models/' );
-				loader.load( '../models/model.3ds', function ( object ) {
-
-					object.traverse( function ( child ) {
-
-						if ( child instanceof THREE.Mesh ) {
-
-							//child.material.normalMap = normal;
-						}
-
-					} );
-
-					Game.scene.add( object );
-				});
-			
-
-*/
-
-	/*
-
-	// instantiate a loader
-	var loader = new THREE.JSONLoader();
-
-	// load a resource
-	loader.load(
-		// resource URL
-			"../models/model.js",
-
-		// onLoad callback
-		function ( geometry, materials ) {
-			var material = materials[ 0 ];
-			var object = new THREE.Mesh( geometry, material );
-				Game.scene.add( object );
-		},
-
-		// onProgress callback
-		function ( xhr ) {
-			console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
-		},
-
-		// onError callback
-		function( err ) {
-			console.log( 'An error happened' );
-		}
-	);
-	*/
-
 }
 
 Game.createMaterials=function(data)
@@ -310,6 +256,8 @@ Game.animate = function () {
 
 		// time
 		Game.prevTime = time;
+
+		//Update Bone Animations
 		for (var i = 0; i < Game.mixers.length; ++i){
 	    	Game.mixers[i].update(delta); 
 			// ... the rest of your code
