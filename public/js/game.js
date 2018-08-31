@@ -21,6 +21,9 @@ Game.moveRight = false;
 Game.velocity = new THREE.Vector3();
 Game.direction = new THREE.Vector3();
 
+//PhysicsWorld
+Game.physicsWorld = new CANNON.World();
+
 // Id
 Game.self;
 
@@ -58,7 +61,45 @@ Game.init = function() {
 
 	// Resize
 	window.addEventListener( 'resize', Game.onWindowResize, false );
-};
+
+	//Physics
+	// Setup  world
+	Game.physicsWorld.gravity.set(0, 0, -9.82); // m/s²
+/*
+	// Create a sphere
+	var radius = 1; // m
+	var sphereBody = new CANNON.Body({
+	   mass: 5, // kg
+	   position: new CANNON.Vec3(0, 0, 10), // m
+	   shape: new CANNON.Sphere(radius)
+	});
+	world.addBody(sphereBody);
+
+	// Create a plane
+	var groundBody = new CANNON.Body({
+	    mass: 0 // mass == 0 makes the body static
+	});
+	var groundShape = new CANNON.Plane();
+	groundBody.addShape(groundShape);
+	world.addBody(groundBody);
+
+	var fixedTimeStep = 1.0 / 60.0; // seconds
+	var maxSubSteps = 3;
+	
+
+	// Start the simulation loop
+	var lastTime;
+	(function simloop(time){
+	  requestAnimationFrame(simloop);
+	  if(lastTime !== undefined){
+	     var dt = (time - lastTime) / 1000;
+	     world.step(fixedTimeStep, dt, maxSubSteps);
+	  }
+	  console.log("Sphere z position: " + sphereBody.position.z);
+	  lastTime = time;
+	})();
+	*/
+	};
 
 Game.createFloor = function() {
 
@@ -98,6 +139,25 @@ Game.createFloor = function() {
 
 	// add floor
 	Game.scene.add( floor );
+
+	//Create Physical Floor
+		// Create a plane
+	var groundBody = new CANNON.Body({
+	    mass: 0 // mass == 0 makes the body static
+	});
+	var groundShape = new CANNON.Plane();
+	groundBody.addShape(groundShape);
+	Game.physicsWorld.addBody(groundBody);
+
+
+	// Create a test sphere
+	var radius = 1; // m
+	var sphereBody = new CANNON.Body({
+	   mass: 5, // kg
+	   position: new CANNON.Vec3(0, 0, 10), // m
+	   shape: new CANNON.Sphere(radius)
+	});
+	Game.physicsWorld.addBody(sphereBody);
 }
 
 Game.createLight = function() {
@@ -181,6 +241,8 @@ Game.animate = function () {
 
 		// calc movement and push on socket
 		Client.calcMovement(delta);
+
+		Game.physicsWorld.step((1.0 / 60.0), delta, 3);
 
 		console.log(Game.controls.getObject().position);
 
