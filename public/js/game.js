@@ -79,6 +79,7 @@ Game.createLevel = function(){
                         if (data.objects[i].type == "SkinnedMesh")
                         {
                             mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
+                            mesh.frustumCulled = false;
                             console.log(mesh);
                         }
                         else // Mesh
