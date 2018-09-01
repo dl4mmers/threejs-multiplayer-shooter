@@ -46,7 +46,7 @@ io.on('connection', function(socket)
 	{
 		// no need to delete scene anymore
 		//socket.emit('deleteallplayers');
-		
+
 		socket.player.username = username;
 
 		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id } );
@@ -64,6 +64,17 @@ io.on('connection', function(socket)
 
 		// broadcast movement
 		socket.broadcast.emit('move', moveData);
+	});
+
+	// shoot
+	//----------------------------------------------------------------------------------------
+	socket.on('shoot', function(shootData) 
+	{
+		// add id  
+		shootData.id = socket.player.id;
+
+		// broadcast movement
+		socket.broadcast.emit('shoot', shootData);
 	});
 
 

@@ -281,6 +281,15 @@ Game.addSelf = function()
 	        z += shootDirection.z * (Game.sphereShape.radius*1.02 + ballShape.radius);
 	        ballBody.position.set(x,y,z);
 	        ballMesh.position.set(x,y,z);
+
+	      	// push on socket and broadcast
+	        var data = 
+	        {
+	        	velocity: new THREE.Vector3(shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo),
+	        	position: new THREE.Vector3(x,y,z)
+	        }
+	        Client.shoot(data);
+
 	    }
 	});
 }
@@ -373,6 +382,35 @@ Game.movePlayer = function(MoveData)
 	
 	if(player !== undefined)
 		player.body.position.copy(MoveData.position);
+}
+
+
+Game.shootPlayer = function(ShootData) 
+{
+	var player = Game.playerMap.get(ShootData.id);
+	
+	if(player !== undefined)
+	{
+		// create bullet
+        var ballBody = new CANNON.Body( { mass: 1 } );
+        ballBody.addShape(ballShape);
+        var ballMesh = new THREE.Mesh( ballGeometry, material );
+
+        // add to world 
+        Game.world.add(ballBody);
+        Game.scene.add(ballMesh);
+
+        // add to collection
+        balls.push(ballBody);
+        ballMeshes.push(ballMesh);
+
+        // set velocity from socket data
+        ballBody.velocity.set(  ShootData.velocity.x, ShootData.velocity.y, ShootData.velocity.z );
+
+        // Move the ball outside the player sphere
+        ballBody.position.set(ShootData.position.x, ShootData.position.y, ShootData.position.z);
+        ballMesh.position.set(ShootData.position.x, ShootData.position.y, ShootData.position.z);
+	}
 }
 
 

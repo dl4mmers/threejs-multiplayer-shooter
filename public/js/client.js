@@ -119,6 +119,11 @@ Client.socket.on('move', function(moveData)
 	Game.movePlayer(moveData);
 });
 
+// Socket Event => Shoot
+Client.socket.on('shoot', function(shootData) 
+{
+	Game.shootPlayer(shootData);
+});
 
 // Socket Event => Player disconnected
 Client.socket.on('remove', function(id)
@@ -206,6 +211,21 @@ Client.socket.on('deleteallplayers', function() {
 
 	Game.animate();
 });
+
+// Socket Events
+//---------------------------------------------------
+
+// Push movement data on socket
+Client.move = function(data) 
+{
+	Client.socket.emit('move', data);
+}
+
+// Push shoot data on socket
+Client.shoot = function(data)
+{
+	Client.socket.emit('shoot', data);
+}
 
 
 // Controls
@@ -311,10 +331,4 @@ function createPointerLockControls() {
 		instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
 
 	}
-}
-
-// Push movement data on socket
-Client.move = function(data) 
-{
-	Client.socket.emit('move', data);
 }
