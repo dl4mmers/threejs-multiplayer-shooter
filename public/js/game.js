@@ -30,14 +30,14 @@ Game.prevTime = performance.now();
 Game.init = function() {
 
 	// Camera
-	Game.camera = new THREE.PerspectiveCamera( 65, window.innerWidth/window.innerHeight, 0.01, 10000 );
+	Game.camera = new THREE.PerspectiveCamera( 65, window.innerWidth/window.innerHeight, 0.01, 1000 );
 	Game.camera.position.y = 60;
 	Game.camera.position.z = 220;
 
 	// Scene
 	Game.scene = new THREE.Scene();
-	Game.scene.background = new THREE.Color( 0xffffff );
-	Game.scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
+	Game.scene.background = new THREE.Color( 0x000000 );
+	Game.scene.fog = new THREE.Fog( 0xA1FF00, 0, 750 );
 
 	// Cam Controls
 	Game.controls = new THREE.PointerLockControls( Game.camera );
@@ -47,7 +47,7 @@ Game.init = function() {
 	Game.playerMap = new Map();
 
 	// Level
-	Game.createFloor();
+	//Game.createFloor();
 	Game.createLight();
 	Game.createLevel();
 
@@ -179,6 +179,15 @@ Game.createLight = function() {
 	var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
 	light.position.set( 0.5, 1, 0.75 );
 	Game.scene.add( light );
+	//Alien Light
+	var plight = new THREE.PointLight( 0xA1FF00, 1, 100 );
+	plight.position.set( 0, 10, 0 );
+	Game.scene.add( plight );
+	//Terminal Light
+	var plight = new THREE.PointLight( 0x3D85C6, 1, 100 );
+	plight.position.set( 0, 10, 10 );
+	Game.scene.add( plight );
+
 
 }
 
