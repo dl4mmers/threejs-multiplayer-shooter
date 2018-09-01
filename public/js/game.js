@@ -20,7 +20,8 @@ Game.velocity = new THREE.Vector3();
 Game.direction = new THREE.Vector3();
 
 // Cannon
-var sphereShape, physicsMaterial, walls=[], balls=[], ballMeshes=[], boxes=[], boxMeshes=[];
+var physicsMaterial, walls=[], balls=[], ballMeshes=[], boxes=[], boxMeshes=[];
+Game.sphereShape;
 Game.sphereBody;
 
 // Id
@@ -67,9 +68,9 @@ Game.initCannon = function()
 
     // Create a sphere
     var mass = 5, radius = 1.3;
-    sphereShape = new CANNON.Sphere(radius);
+    Game.sphereShape = new CANNON.Sphere(radius);
     Game.sphereBody = new CANNON.Body({ mass: mass });
-    Game.sphereBody.addShape(sphereShape);
+    Game.sphereBody.addShape(Game.sphereShape);
     Game.sphereBody.position.set(0,5,0);
     Game.sphereBody.linearDamping = 0.9;
     Game.world.add(Game.sphereBody);
@@ -90,7 +91,9 @@ Game.initThree = function()
 {
 
 	// Camera
-	Game.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 1000 );
+	Game.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+	// Spectate position
 	Game.camera.position.y = 60;
 	Game.camera.position.z = 220;
 
@@ -312,6 +315,63 @@ Game.onWindowResize = function() {
 	Game.camera.updateProjectionMatrix();
 	Game.renderer.setSize( window.innerWidth, window.innerHeight );
 }
+
+// 
+// Shoot Functionality
+//
+
+var ballShape = new CANNON.Sphere(0.2);
+var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
+var shootDirection = new THREE.Vector3();
+var shootVelo = 80;
+var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+
+// shoot direction
+Game.getShootDir = function (targetVec)
+{
+    var vector = targetVec;
+    targetVec.set(0,0,1);
+    vector.unproject(Game.camera);
+    var ray = new THREE.Ray(Game.sphereBody.position, vector.sub(Game.sphereBody.position).normalize() );
+    targetVec.copy(ray.direction);
+}
+
+// click eventlistener
+window.addEventListener("click",function(e) 
+{
+    if( Game.controls.enabled==true )
+    {
+    	// get player pos
+        var x = Game.sphereBody.position.x;
+        var y = Game.sphereBody.position.y;
+        var z = Game.sphereBody.position.z;
+
+        // create bullet
+        var ballBody = new CANNON.Body( { mass: 1 } );
+        ballBody.addShape(ballShape);
+        var ballMesh = new THREE.Mesh( ballGeometry, material );
+
+        // add to world 
+        Game.world.add(ballBody);
+        Game.scene.add(ballMesh);
+
+        // add to collection
+        balls.push(ballBody);
+        ballMeshes.push(ballMesh);
+
+        // get direction and set velocity
+        Game.getShootDir(shootDirection);
+
+        ballBody.velocity.set(  shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo);
+
+        // Move the ball outside the player sphere
+        x += shootDirection.x * (Game.sphereShape.radius*1.02 + ballShape.radius);
+        y += shootDirection.y * (Game.sphereShape.radius*1.02 + ballShape.radius);
+        z += shootDirection.z * (Game.sphereShape.radius*1.02 + ballShape.radius);
+        ballBody.position.set(x,y,z);
+        ballMesh.position.set(x,y,z);
+    }
+});
 
 // Start game
 Game.initCannon();

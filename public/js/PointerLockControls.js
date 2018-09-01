@@ -176,6 +176,5 @@
 
         yawObject.position.copy(cannonBody.position);
 
-        console.log(cannonBody.position);
     };
 };
