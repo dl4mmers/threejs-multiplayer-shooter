@@ -27,43 +27,58 @@ server.listen(3000, 'localhost' ,function(){
 });
 
 // Create Socket on Connection
-io.on('connection', function(socket){
+io.on('connection', function(socket)
+{
 
-	// spectate 
+	// spectate
+	//----------------------------------------------------------------------------------------
+	socket.player = 
+	{
+		id: server.lastPlayerID++,
+		username: "spectator"
+	};
 	socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: "spectate" } );
 
+
 	// new player
-	socket.on('new user', function(username){
-		socket.emit('deleteallplayers');
-		socket.player = {
-			id: server.lastPlayerID++,
-			username: username,
-			position: new THREE.Object3D(0, 10, 0)
-		};
+	//----------------------------------------------------------------------------------------
+	socket.on('new user', function(username)
+	{
+		// no need to delete scene anymore
+		//socket.emit('deleteallplayers');
+		
+		socket.player.username = username;
+
 		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id } );
 		socket.broadcast.emit('new user', socket.player);
 		socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
 	});
 
+
 	// movement
-	socket.on('move', function(moveData){
-
-		// translate 
-		socket.player.position.x = moveData.x;
-		socket.player.position.z = moveData.z;
-
+	//----------------------------------------------------------------------------------------
+	socket.on('move', function(moveData) 
+	{
+		// add id  
 		moveData.id = socket.player.id;
 
-		io.emit('move', moveData);
+		// broadcast movement
+		socket.broadcast.emit('move', moveData);
 	});
 
+
 	// chat
-	socket.on('chat message', function(msg){
+	//----------------------------------------------------------------------------------------
+	socket.on('chat message', function(msg)
+	{
 		io.emit('chat message', msg);
 	});
 
+
 	// disconnect
-	socket.on('disconnect',function(){
+	//----------------------------------------------------------------------------------------
+	socket.on('disconnect',function() 
+	{
         if(typeof(socket.player) != 'undefined') {
         	console.log("disconnect");
         	socket.broadcast.emit('remove',socket.player.id);

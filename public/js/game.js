@@ -10,22 +10,20 @@
 
 Game = {};
 
-// Controls
-Game.controlsEnabled = false;
-Game.moveForward = false;
-Game.moveBackward = false;
-Game.moveLeft = false;
-Game.moveRight = false;
-Game.velocity = new THREE.Vector3();
-Game.direction = new THREE.Vector3();
-
 // Cannon
 var physicsMaterial, walls=[], balls=[], ballMeshes=[], boxes=[], boxMeshes=[];
 Game.sphereShape;
 Game.sphereBody;
 
+// For Shoot
+var ballShape = new CANNON.Sphere(0.2);
+var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
+var shootDirection = new THREE.Vector3();
+var shootVelo = 80;
+var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+
 // Id
-Game.self;
+Game.self = undefined;
 
 // Time
 Game.prevTime = performance.now();
@@ -66,21 +64,6 @@ Game.initCannon = function()
     // We must add the contact materials to the world
     Game.world.addContactMaterial(physicsContactMaterial);
 
-    // Create a sphere
-    var mass = 5, radius = 1.3;
-    Game.sphereShape = new CANNON.Sphere(radius);
-    Game.sphereBody = new CANNON.Body({ mass: mass });
-    Game.sphereBody.addShape(Game.sphereShape);
-    Game.sphereBody.position.set(0,5,0);
-    Game.sphereBody.linearDamping = 0.9;
-    Game.world.add(Game.sphereBody);
-
-    // Create a plane
-    var groundShape = new CANNON.Plane();
-    var groundBody = new CANNON.Body({ mass: 0 });
-    groundBody.addShape(groundShape);
-    groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
-    Game.world.add(groundBody);
 }
 
 
@@ -94,17 +77,13 @@ Game.initThree = function()
 	Game.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 	// Spectate position
-	Game.camera.position.y = 60;
-	Game.camera.position.z = 220;
+	Game.camera.position.y = 10;
+	Game.camera.position.z = 20;
 
 	// Scene
 	Game.scene = new THREE.Scene();
 	Game.scene.background = new THREE.Color( 0xffffff );
 	Game.scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
-
-	// Cam Controls
-	Game.controls = new PointerLockControls( Game.camera, Game.sphereBody );
-	Game.scene.add( Game.controls.getObject() );
 
 	// PlayerMap
 	Game.playerMap = new Map();
@@ -127,51 +106,58 @@ Game.initThree = function()
 
 	Game.createFloor();
 	Game.createLight();
-	Game.createBoxes();
 	
 };
 
-
+//
+// Update Function
+//
 Game.animate = function () 
 {
 
 	requestAnimationFrame( Game.animate );
 
-	if ( Game.controlsEnabled === true ) 
+	// delta time
+	var time = performance.now();
+	var delta = ( time - Game.prevTime ) / 1000;
+
+	// Cannon Simulation Loop
+	Game.world.step(1.0 / 60.0);
+
+    // Update ball positions
+    for(var i=0; i< balls.length; i++){
+        ballMeshes[i].position.copy(balls[i].position);
+        ballMeshes[i].quaternion.copy(balls[i].quaternion);
+    }
+
+    // Update box positions
+    for(var i=0; i< boxes.length; i++){
+        boxMeshes[i].position.copy(boxes[i].position);
+        boxMeshes[i].quaternion.copy(boxes[i].quaternion);
+    }
+
+    // Update Players
+	Game.playerMap.forEach( function(value, key) 
 	{
-		
-		// delta time
-		var time = performance.now();
-		var delta = ( time - Game.prevTime ) / 1000;
+	  value.mesh.position.copy(value.body.position);
+	  value.mesh.quaternion.copy(value.body.quaternion);
+	}, Game.playerMap);
 
-		// calc movement and push on socket
-		Client.calcMovement(delta);
+	
+	// update Debug Renderer
+	Game.cannonDebugRenderer.update();
 
-		// Cannon Simulation Loop
-		Game.world.step(1.0 / 60.0);
-
-        // Update ball positions
-        for(var i=0; i<balls.length; i++){
-            ballMeshes[i].position.copy(balls[i].position);
-            ballMeshes[i].quaternion.copy(balls[i].quaternion);
-        }
-
-        // Update box positions
-        for(var i=0; i<boxes.length; i++){
-            boxMeshes[i].position.copy(boxes[i].position);
-            boxMeshes[i].quaternion.copy(boxes[i].quaternion);
-        }
-
-		// update Debug Renderer
-		Game.cannonDebugRenderer.update();
-
-		// update controls
+	// update controls and self position ONLY if not in spectate mode
+	if(Game.self !== "spectate" && Game.self !== undefined)
+	{
+		Game.updatePosAndRot();
 		Game.controls.update( delta );
-
-		// time
-		Game.prevTime = time;
 	}
-
+	
+	// time
+	Game.prevTime = time;
+	
+	// render
 	Game.renderer.render( Game.scene, Game.camera );
 };
 
@@ -220,112 +206,6 @@ Game.createLight = function()
 }
 
 
-Game.createBoxes = function() 
-{
-    // Add boxes
-    var halfExtents = new CANNON.Vec3(1,1,1);
-    var boxShape = new CANNON.Box(halfExtents);
-    var boxGeometry = new THREE.BoxGeometry(halfExtents.x*2,halfExtents.y*2,halfExtents.z*2);
-    
-    for(var i=0; i<7; i++)
-    {
-        var x = (Math.random()-0.5)*20;
-        var y = 1 + (Math.random()-0.5)*1;
-        var z = (Math.random()-0.5)*20;
-        var boxBody = new CANNON.Body({ mass: 5 });
-        boxBody.addShape(boxShape);
-        //var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
-        var boxMesh = new THREE.Mesh( boxGeometry, new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
-
-
-        Game.world.add(boxBody);
-        Game.scene.add(boxMesh);
-
-        boxBody.position.set(x,y,z);
-        boxMesh.position.set(x,y,z);
-        boxMesh.castShadow = true;
-        boxMesh.receiveShadow = true;
-        boxes.push(boxBody);
-        boxMeshes.push(boxMesh);
-    }
-}
-
-Game.addPlayer = function(player) {
-
-	// Create Cube
-	var playerObj = {};
-	playerObj.cube = new THREE.Mesh( new THREE.BoxGeometry( 20, 20, 20 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
-
-	// Add Tag
-	playerObj.cube.name = player.id;
-
-	// Set position
-	playerObj.cube.position = player.position;
-
-	// Add cube to Scene and PlayerMap
-	Game.scene.add( playerObj.cube );
-	Game.playerMap.set(player.id, playerObj);
-
-}
-
-Game.removePlayer = function(id) {
-
-	// Get Object
-	var obj = Game.scene.getObjectByName(id);
-
-	// Remove it
-    Game.scene.remove( obj );
-    obj.geometry.dispose();
-    obj.material.dispose();
-    obj = undefined;
-
-   	// Clear PlayerMap
-    Game.playerMap.delete(id);
-
-    Game.animate();
-
-}
-
-Game.movePlayer = function(MoveData) {
-	
-	// Translate ControlObject @ Client
-	if(MoveData.id == Game.self) {
-		Game.controls.getObject().position.x = MoveData.x;
-		Game.controls.getObject().position.z = MoveData.z;
-	}
-
-	// Translate PlayerObject @ all
-	var player = Game.playerMap.get(MoveData.id);
-	player.cube.position.x = MoveData.x;
-	player.cube.position.z = MoveData.z;
-
-}
-
-Game.clearScene = function(obj) {
-
-	// Remove every scene child 
-	while( obj.children.length > 0 ) { obj.remove(obj.children[0]); }
-	if(obj.geometry) obj.geometry.dispose();
-	if(obj.material) obj.material.dispose();
-	if(obj.texture)  obj.texture.dispose();
-}   
-
-Game.onWindowResize = function() {
-	Game.camera.aspect = window.innerWidth / window.innerHeight;
-	Game.camera.updateProjectionMatrix();
-	Game.renderer.setSize( window.innerWidth, window.innerHeight );
-}
-
-// 
-// Shoot Functionality
-//
-
-var ballShape = new CANNON.Sphere(0.2);
-var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
-var shootDirection = new THREE.Vector3();
-var shootVelo = 80;
-var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-
 // shoot direction
 Game.getShootDir = function (targetVec)
 {
@@ -336,42 +216,207 @@ Game.getShootDir = function (targetVec)
     targetVec.copy(ray.direction);
 }
 
-// click eventlistener
-window.addEventListener("click",function(e) 
+//
+// gets called when a player logs in 
+// creates the players body, mesh, controls and ability to shoot
+//
+Game.addSelf = function() 
 {
-    if( Game.controls.enabled==true )
+	// Create a sphere
+    var mass = 5, radius = 1.3;
+    Game.sphereShape = new CANNON.Sphere(radius);
+    Game.sphereBody = new CANNON.Body({ mass: mass });
+    Game.sphereBody.addShape(Game.sphereShape);
+    Game.sphereBody.position.set(0,5,0);
+    Game.sphereBody.linearDamping = 0.9;
+    Game.world.add(Game.sphereBody);
+
+    // Create a plane
+    var groundShape = new CANNON.Plane();
+    var groundBody = new CANNON.Body({ mass: 0 });
+    groundBody.addShape(groundShape);
+    groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
+    Game.world.add(groundBody);
+
+    // Cam Controls
+	Game.controls = new PointerLockControls( Game.camera, Game.sphereBody );
+	Game.scene.add( Game.controls.getObject() );
+
+
+	// 
+	// Shoot Functionality
+	//
+
+	// click eventlistener
+	window.addEventListener("click",function(e) 
+	{
+	    if( Game.controls.enabled==true )
+	    {
+	    	// get player pos
+	        var x = Game.sphereBody.position.x;
+	        var y = Game.sphereBody.position.y;
+	        var z = Game.sphereBody.position.z;
+
+	        // create bullet
+	        var ballBody = new CANNON.Body( { mass: 1 } );
+	        ballBody.addShape(ballShape);
+	        var ballMesh = new THREE.Mesh( ballGeometry, material );
+
+	        // add to world 
+	        Game.world.add(ballBody);
+	        Game.scene.add(ballMesh);
+
+	        // add to collection
+	        balls.push(ballBody);
+	        ballMeshes.push(ballMesh);
+
+	        // get direction and set velocity
+	        Game.getShootDir(shootDirection);
+
+	        ballBody.velocity.set(  shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo);
+
+	        // Move the ball outside the player sphere
+	        x += shootDirection.x * (Game.sphereShape.radius*1.02 + ballShape.radius);
+	        y += shootDirection.y * (Game.sphereShape.radius*1.02 + ballShape.radius);
+	        z += shootDirection.z * (Game.sphereShape.radius*1.02 + ballShape.radius);
+	        ballBody.position.set(x,y,z);
+	        ballMesh.position.set(x,y,z);
+	    }
+	});
+}
+
+
+
+
+//
+// Multiplayer Functions
+//
+
+Game.updatePosAndRot = function()
+{
+	// get position
+	var data = {
+		position: new THREE.Vector3()
+	};
+	data.position.copy(Game.sphereBody.position);
+
+	// push on socket
+	Client.move(data);
+}
+
+
+Game.addPlayer = function(player) 
+{
+
+	console.log("AddPlayer");
+
+	// Add Sphere
+	var ballShape = new CANNON.Sphere(1.0);
+	var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
+	var material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+
+    // create cannon body
+    var ballBody = new CANNON.Body( { mass: 0 } );
+    ballBody.addShape(ballShape);
+    var ballMesh = new THREE.Mesh( ballGeometry, material );
+    ballMesh.name = player.id;
+
+    // set position
+    ballBody.position.set(0, 0, 0);
+    ballMesh.position.set(0, 0, 0);
+
+    // create player object
+    var playerObj = 
     {
-    	// get player pos
-        var x = Game.sphereBody.position.x;
-        var y = Game.sphereBody.position.y;
-        var z = Game.sphereBody.position.z;
+    	body: ballBody,
+    	mesh: ballMesh,
+    	name: player.id
+    };
 
-        // create bullet
-        var ballBody = new CANNON.Body( { mass: 1 } );
-        ballBody.addShape(ballShape);
-        var ballMesh = new THREE.Mesh( ballGeometry, material );
+    // add to world / scene / map
+    Game.world.add(playerObj.body);
+    Game.scene.add(playerObj.mesh);
+	Game.playerMap.set(player.id, playerObj);
 
-        // add to world 
-        Game.world.add(ballBody);
-        Game.scene.add(ballMesh);
+}
 
-        // add to collection
-        balls.push(ballBody);
-        ballMeshes.push(ballMesh);
 
-        // get direction and set velocity
-        Game.getShootDir(shootDirection);
+Game.removePlayer = function(id) 
+{
 
-        ballBody.velocity.set(  shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo);
+	// Get Three Object
+	var obj = Game.scene.getObjectByName(id);
 
-        // Move the ball outside the player sphere
-        x += shootDirection.x * (Game.sphereShape.radius*1.02 + ballShape.radius);
-        y += shootDirection.y * (Game.sphereShape.radius*1.02 + ballShape.radius);
-        z += shootDirection.z * (Game.sphereShape.radius*1.02 + ballShape.radius);
-        ballBody.position.set(x,y,z);
-        ballMesh.position.set(x,y,z);
+	// Get Cannon Object
+	var player = Game.playerMap.get(id);
+
+	// Remove it from scene
+    Game.scene.remove( obj );
+    obj.geometry.dispose();
+    obj.material.dispose();
+    obj = undefined;
+
+    // Remove it from Cannon world
+    Game.world.remove(player.body);
+
+   	// Clear PlayerMap
+    Game.playerMap.delete(id);
+
+    Game.animate();
+
+}
+
+
+Game.movePlayer = function(MoveData) 
+{
+	var player = Game.playerMap.get(MoveData.id);
+	
+	if(player !== undefined)
+		player.body.position.copy(MoveData.position);
+}
+
+
+Game.clearScene = function(obj) 
+{
+
+	// Remove every scene child 
+	while( obj.children.length > 0 ) { obj.remove(obj.children[0]); }
+	if(obj.geometry) obj.geometry.dispose();
+	if(obj.material) obj.material.dispose();
+	if(obj.texture)  obj.texture.dispose();
+
+	ballMeshes.length = 0;
+	boxMeshes.length = 0;
+
+	// Clear Cannon World
+    for(var i=0; i<balls.length; i++){
+        Game.world.remove(balls[i]);
     }
-});
+
+    for(var i=0; i<boxes.length; i++){
+        Game.world.remove(boxes[i]);
+    }
+
+    balls.length = 0;
+    boxes.length = 0;
+
+	Game.playerMap.forEach(function(value, key) 
+	{
+		Game.world.remove(value.body);
+	}, Game.playerMap);
+
+	// Clear playermap
+	Game.playerMap.clear();
+
+}   
+
+
+Game.onWindowResize = function() 
+{
+	Game.camera.aspect = window.innerWidth / window.innerHeight;
+	Game.camera.updateProjectionMatrix();
+	Game.renderer.setSize( window.innerWidth, window.innerHeight );
+}
 
 // Start game
 Game.initCannon();

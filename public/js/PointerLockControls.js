@@ -140,7 +140,7 @@
     var euler = new THREE.Euler();
     this.update = function ( delta ) {
 
-        if ( scope.enabled === false ) return;
+        //if ( scope.enabled === false ) return;
 
         delta *= 100;
 

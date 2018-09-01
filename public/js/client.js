@@ -44,9 +44,6 @@ $("#username-form").submit(function() {
 	// PointerlockControls
 	createPointerLockControls();
 
-	// KeyboardListeners
-	//addKeyListeners();
-
     return false;
   }
 
@@ -110,43 +107,79 @@ Client.socket.on('chat message', function(msg){
 
 
 // Socket Event => New Player
-Client.socket.on('new user', function(player) {
+Client.socket.on('new user', function(player) 
+{
 	Game.addPlayer(player);
 });
 
 
 // Socket Event => Move Player
-Client.socket.on('move', function(moveData) {
+Client.socket.on('move', function(moveData) 
+{
 	Game.movePlayer(moveData);
 });
 
 
 // Socket Event => Player disconnected
-Client.socket.on('remove', function(id){
+Client.socket.on('remove', function(id)
+{
 	Game.removePlayer(id);
 });
 
 
 // Socket Event => Get All Players
-Client.socket.on('allplayers',function(data) {
+Client.socket.on('allplayers',function(data) 
+{
 	console.log(data);
 
-	var playerString = "";
-	if(data.allPlayers.length != 0)
-		playerString = "Aktive Spieler: ";
+	// spectate
+	if( data.selfId === "spectate" )
+	{
+		Game.self = "spectate";
 
-    for(var i = 0; i < data.allPlayers.length; i++) {
-    	if(!Game.playerMap.has(i))
-        	Game.addPlayer(data.allPlayers[i]);
+		if(data.allPlayers.length != 0)
+		{
+		    for(var i = 0; i < data.allPlayers.length; i++) 
+		    {
+		    	if(!Game.playerMap.has(i) && data.allPlayers[i].username !== "spectator")
+		    	{
+		        	Game.addPlayer(data.allPlayers[i]);
+		    	}
+		    }
+		}
 
-        playerString += ("[" + data.allPlayers[i].username + "] ");
-    }
+	} 
+	else 
+	{
+		// set camera and id
+		Game.camera.position.set(0, 0, 0);
+	    Game.self = data.selfId;
 
-    $('#messages').append($('<li>').text(playerString));
+	    // add self
+	    Game.addSelf();
 
-    // set self id
-    if(data.selfId != "spectate")
-    	Game.self = data.selfId;
+		var playerString = "";
+
+		// add all existing players
+		if(data.allPlayers.length != 0)
+		{
+			playerString = "Aktive Spieler: ";
+
+		    for(var i = 0; i < data.allPlayers.length; i++) 
+		    {
+		    	if(!Game.playerMap.has(i) && Game.self != data.allPlayers[i].id && data.allPlayers[i].username !== "spectator")
+		        	Game.addPlayer(data.allPlayers[i]);
+
+		        playerString += ("[" + data.allPlayers[i].username + "] ");
+		    }
+
+		    $('#messages').append($('<li>').text(playerString));
+		}
+
+
+	}
+
+
 });
 
 
@@ -155,7 +188,6 @@ Client.socket.on('deleteallplayers', function() {
 
 	// clear scene
 	Game.clearScene(Game.scene);
-	Game.playerMap.clear();
 
 	// clear controls
 	delete Game.controls;
@@ -167,7 +199,10 @@ Client.socket.on('deleteallplayers', function() {
 	// recreate level
 	Game.createFloor();
 	Game.createLight();
-	Game.createBoxes();
+	//Game.createBoxes();
+
+	delete Game.cannonDebugRenderer;
+	Game.cannonDebugRenderer = new THREE.CannonDebugRenderer( Game.scene, Game.world );
 
 	Game.animate();
 });
@@ -176,7 +211,10 @@ Client.socket.on('deleteallplayers', function() {
 // Controls
 //---------------------------------------------------
 
-// Pointerlock (FPS) Controls
+//
+// creates pointerlock controls
+// creates game overlay
+//
 function createPointerLockControls() {
 
 	// create blocker and instruction divs
@@ -226,7 +264,7 @@ function createPointerLockControls() {
 			if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
 
 				// PointerLock enabled => In Game
-				Game.controlsEnabled = true;
+				//Game.controlsEnabled = true;
 				Game.controls.enabled = true;
 				blocker.style.display = 'none';
 				$('#game-overlay').removeClass('hide');
@@ -236,7 +274,7 @@ function createPointerLockControls() {
 			} else {
 
 				// PointerLock disbaled => Block Screen
-				Game.controlsEnabled = false;
+				//Game.controlsEnabled = false;
 				Game.controls.enabled = false;
 				blocker.style.display = 'block';
 				instructions.style.display = '';
@@ -275,77 +313,8 @@ function createPointerLockControls() {
 	}
 }
 
-// Keyboard Listeners
-
-/*
-function addKeyListeners() {
-
-	var onKeyDown = function ( event ) {
-		switch ( event.keyCode ) {
-			case 38: // up
-			case 87: // w
-				Game.moveForward = true; break;
-
-			case 37: // left
-			case 65: // a
-				Game.moveLeft = true; break;
-
-			case 40: // down
-			case 83: // s
-				Game.moveBackward = true; break;
-
-			case 39: // right
-			case 68: // d
-				Game.moveRight = true; break;
-
-		}
-	};
-
-	var onKeyUp = function ( event ) {
-		switch( event.keyCode ) {
-			case 38: // up
-			case 87: // w
-				Game.moveForward = false; break;
-
-			case 37: // left
-			case 65: // a
-				Game.moveLeft = false; break;
-
-			case 40: // down
-			case 83: // s
-				Game.moveBackward = false; break;
-
-			case 39: // right
-			case 68: // d
-				Game.moveRight = false; break;
-		}
-	};
-
-	document.addEventListener( 'keydown', onKeyDown, false );
-	document.addEventListener( 'keyup', onKeyUp, false );
-
-}
-*/
-
-
 // Push movement data on socket
-Client.calcMovement = function(delta) {
-
-	Game.velocity.x -= Game.velocity.x * 10.0 * delta;
-	Game.velocity.z -= Game.velocity.z * 10.0 * delta;
-	
-	// direction
-	Game.direction.z = Number( Game.moveForward ) - Number( Game.moveBackward );
-	Game.direction.x = Number( Game.moveLeft ) - Number( Game.moveRight );
-	Game.direction.normalize();
-
-	if ( Game.moveForward || Game.moveBackward ) Game.velocity.z -= Game.direction.z * 400.0 * delta;
-	if ( Game.moveLeft || Game.moveRight ) Game.velocity.x -= Game.direction.x * 400.0 * delta;
-
-	// Push on Socket
-	var newPos = Game.controls.getObject();
-	newPos.translateX( Game.velocity.x * delta );
-	newPos.translateZ( Game.velocity.z * delta );
-
-	Client.socket.emit('move', newPos.position );
+Client.move = function(data) 
+{
+	Client.socket.emit('move', data);
 }
