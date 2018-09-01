@@ -4,14 +4,16 @@
 
 //
 //	TODO:
-//	- Kugeln Schießen
-//	- RMA Skript zur Erstellung von Kollisionsboxen raussuchen
-// 	- Multiplayer Kollisionen und Schießen testen 
+//	- Treffer auswerten
+//	- Leben adden
+//	- Bei Kill => Respawn
+//	- Team-Punkte
+//
 
 Game = {};
 
 // Cannon
-var physicsMaterial, walls=[], balls=[], ballMeshes=[], boxes=[], boxMeshes=[];
+var physicsMaterial, balls=[], ballMeshes=[];
 Game.sphereShape;
 Game.sphereBody;
 
@@ -130,12 +132,6 @@ Game.animate = function ()
         ballMeshes[i].quaternion.copy(balls[i].quaternion);
     }
 
-    // Update box positions
-    for(var i=0; i< boxes.length; i++){
-        boxMeshes[i].position.copy(boxes[i].position);
-        boxMeshes[i].quaternion.copy(boxes[i].quaternion);
-    }
-
     // Update Players
 	Game.playerMap.forEach( function(value, key) 
 	{
@@ -230,6 +226,33 @@ Game.addSelf = function()
     Game.sphereBody.position.set(0,5,0);
     Game.sphereBody.linearDamping = 0.9;
     Game.world.add(Game.sphereBody);
+
+    // Create Health
+    Game.health = 100;
+
+    // Create EventListener for Collision Detection
+    // When a body collides with another body, they both dispatch the "collide" event.
+	Game.sphereBody.addEventListener("collide",function(e)
+	{
+		if(e.body.name == "Bullet")
+		{	
+			Game.health -= 5;
+
+			// if player is dead respawn him 
+			// idea: create random respawn points based on level layout and team gameplay
+			// todo: set team points += 1 for killing other team players
+			if(Game.health == 0)
+			{
+				Game.health = 100;
+				Game.sphereBody.position.set(0, 10, 0);
+			}
+			
+			Client.setHealth(Game.health);
+
+		}
+		//console.log("Collided with body:",e.body);
+		//console.log("Contact between bodies:",e.contact);
+	});
 
     // Create a plane
     var groundShape = new CANNON.Plane();
@@ -394,6 +417,8 @@ Game.shootPlayer = function(ShootData)
 		// create bullet
         var ballBody = new CANNON.Body( { mass: 1 } );
         ballBody.addShape(ballShape);
+        ballBody.name = "Bullet";
+	    ballBody.team = ShootData.id;
         var ballMesh = new THREE.Mesh( ballGeometry, material );
 
         // add to world 

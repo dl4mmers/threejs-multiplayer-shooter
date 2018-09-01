@@ -227,6 +227,12 @@ Client.shoot = function(data)
 	Client.socket.emit('shoot', data);
 }
 
+// Set Healthbar
+Client.setHealth = function(health)
+{
+	$("#healthbar").attr("style", "width: " + health + "%");
+	$("#healthbar").attr("aria-valuenow", health);
+}
 
 // Controls
 //---------------------------------------------------
@@ -263,7 +269,7 @@ function createPointerLockControls() {
 	}).insertBefore('canvas');
 
 	// add healthbar to game overlay
-	jQuery('<div style="margin-top: auto; padding: 20px"><div class="progress" style="width: 300px"><div class="progress-bar bg-danger" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div></div></div>', {
+	jQuery('<div style="margin-top: auto; padding: 20px"><div class="progress" style="width: 300px"><div id="healthbar" class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div></div></div>', {
 	}).appendTo('#game-overlay');
 	// -->
 
