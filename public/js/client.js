@@ -236,6 +236,9 @@ Client.setHealth = function(health)
 	$("#healthbar").text(health);
 }
 
+// todo score event
+// set team score
+
 // Controls
 //---------------------------------------------------
 
@@ -277,17 +280,21 @@ function createPointerLockControls() {
 	// create team tag overlay
 	jQuery('<div/>', {
 	    id: 'team-tag-overlay',
-	    class: 'd-flex align-items-center flex-column justify-content-center h-100'
+	    class: 'd-flex align-items-center flex-column justify-content-flex-start h-100'
 	}).insertBefore('canvas');
 	
 	if(Game.team == "red")
 	{
-		jQuery('<img style="margin-bottom:auto; padding: 15px" src="../img/red2.png" class="align-middle">', {
+		jQuery('<h1 style="color: #dc3545; margin: 10px 0px 0px 0px">Team Red</h1>', {
+		}).appendTo('#team-tag-overlay');
+		jQuery('<h1 style="display: flex"><div id="score-red" style="color: #dc3545">0</div>&nbsp;-&nbsp;<div id="score-blue" style="color: #0099cc">0</div></h1>', {
 		}).appendTo('#team-tag-overlay');
 	} 
 	else if (Game.team == "blue")
 	{
-		jQuery('<img style="margin-bottom:auto; padding: 15px" src="../img/blue2.png" class="align-middle">', {
+		jQuery('<h1 style="color: #0099cc; margin: 10px 0px 0px 0px">Team Blue</h1>', {
+		}).appendTo('#team-tag-overlay');
+		jQuery('<h1 style="display: flex"><div id="score-red" style="color: #dc3545">0</div>&nbsp;-&nbsp;<div id="score-blue" style="color: #0099cc">0</div></h1>', {
 		}).appendTo('#team-tag-overlay');
 	}
 
