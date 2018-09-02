@@ -114,8 +114,7 @@ Client.socket.on('new user', function(player)
 
 
 // Socket Event => Move Player
-Client.socket.on('move', function(moveData) 
-{
+Client.socket.on('move', function(moveData) {
 	Game.movePlayer(moveData);
 });
 
@@ -135,7 +134,7 @@ Client.socket.on('remove', function(id)
 // Socket Event => Get All Players
 Client.socket.on('allplayers',function(data) 
 {
-	console.log(data);
+	//console.log(data);
 
 	// spectate
 	if( data.selfId === "spectate" )
@@ -205,6 +204,7 @@ Client.socket.on('deleteallplayers', function() {
 	Game.createFloor();
 	Game.createLight();
 	//Game.createBoxes();
+	Game.createLevel();
 
 	delete Game.cannonDebugRenderer;
 	Game.cannonDebugRenderer = new THREE.CannonDebugRenderer( Game.scene, Game.world );

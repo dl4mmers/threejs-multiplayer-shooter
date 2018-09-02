@@ -84,8 +84,8 @@ Game.initThree = function()
 
 	// Scene
 	Game.scene = new THREE.Scene();
-	Game.scene.background = new THREE.Color( 0xffffff );
-	Game.scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
+	Game.scene.background = new THREE.Color( 0x000000 );
+	Game.scene.fog = new THREE.Fog( 0xA1FF00, 0, 750 );
 
 	// PlayerMap
 	Game.playerMap = new Map();
@@ -108,6 +108,8 @@ Game.initThree = function()
 
 	Game.createFloor();
 	Game.createLight();
+	Game.createLevel();
+	Game.mixers=[];
 	
 };
 
@@ -117,7 +119,7 @@ Game.initThree = function()
 Game.animate = function () 
 {
 
-	requestAnimationFrame( Game.animate );
+
 
 	// delta time
 	var time = performance.now();
@@ -149,12 +151,20 @@ Game.animate = function ()
 		Game.updatePosAndRot();
 		Game.controls.update( delta );
 	}
+
+	//Update Bone&Line Animations
+	for (var i = 0; i < Game.mixers.length; ++i){
+	   	Game.mixers[i].update(delta); 
+			// ... the rest of your code
+	}
+
 	
 	// time
 	Game.prevTime = time;
 	
 	// render
 	Game.renderer.render( Game.scene, Game.camera );
+		requestAnimationFrame( Game.animate );
 };
 
 
@@ -192,13 +202,109 @@ Game.createFloor = function()
 	var floor = new THREE.Mesh( floorGeometry, floorMaterial );
 	Game.scene.add( floor );
 }
+Game.createCollisionLevel = function(){
+var loader = new THREE.JDLoader();
+	loader.load("../models/collision.jd", 
+            function (data)
+            {                            
+                for (var i = 0; i < data.objects.length; ++i)
+                {
+                    if (data.objects[i].type == "Mesh")
+                    {
+                    	var meshes=[];
+                        var mesh = null;
+                        var matArray = Game.createMaterials(data);
+                        mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
+                        console.log(data.objects[i].geometry);
+                        meshes.push(mesh);
+                        Game.scene.add(mesh);
+                    }
+                }        
+            });
 
+}
+Game.createLevel = function(){
+	var loader = new THREE.JDLoader();
+	loader.load("../models/model.jd", 
+            function (data)
+            {                            
+                for (var i = 0; i < data.objects.length; ++i)
+                {
+                    if (data.objects[i].type == "Mesh" || data.objects[i].type == "SkinnedMesh")
+                    {
+                    	var meshes=[];
+                        var mesh = null;
+                        var matArray = Game.createMaterials(data);
+                        if (data.objects[i].type == "SkinnedMesh")
+                        {
+                            mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
+                            mesh.frustumCulled = false;
+                            console.log(mesh);
+                        }
+                        else // Mesh
+                        {
+                            mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
+                        }
+                        meshes.push(mesh);
+                        Game.scene.add(mesh);
+ 
+                        //Now we need THREE.AnimationMixer to play the animation.
+                        if (mesh && mesh.geometry.animations)
+                        {
+                            var mixer = new THREE.AnimationMixer(mesh);
+                            Game.mixers.push(mixer);
+                            var action = mixer.clipAction( mesh.geometry.animations[0] );
+                            action.play();
+                        }
+                    }
+                    else if (data.objects[i].type == "Line")
+                    {
+                        var jd_color = data.objects[i].jd_object.color;
+                        var color1 = new THREE.Color( jd_color[0] / 255, jd_color[1] / 255, jd_color[2] / 255 );
+                        var material = new THREE.LineBasicMaterial({ color: color1}); 
+                        var line = new THREE.Line(data.objects[i].geometry, material);
+                        Game.scene.add(line);
+ 
+                        if (line.geometry.animations)
+                        {                                        
+                            var mixer = new THREE.AnimationMixer(line);
+                            Game.mixers.push(mixer);                                        
+                            var action = mixer.clipAction(line.geometry.animations[0]);
+                            action.play();
+                        }
+                    }
+                }        
+            });
+}
+Game.createMaterials=function(data)
+        {
+            var matArray = [];
+            for (var j = 0; j < data.materials.length; ++j)
+            {
+                var mat = new THREE.MeshPhongMaterial({});
+                mat.copy(data.materials[j]);
+                mat.side = THREE.DoubleSide;
+
+                //mat.transparent = true;
+                matArray.push(mat);
+            }
+            return matArray;
+        }
 
 Game.createLight = function() 
 {
+	// Light
 	var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
 	light.position.set( 0.5, 1, 0.75 );
 	Game.scene.add( light );
+	//Alien Light
+	var plight = new THREE.PointLight( 0xA1FF00, 1, 100 );
+	plight.position.set( 0, 10, 0 );
+	Game.scene.add( plight );
+	//Terminal Light
+	var plight = new THREE.PointLight( 0x3D85C6, 1, 100 );
+	plight.position.set( 0, 10, 10 );
+	Game.scene.add( plight );
 }
 
 
