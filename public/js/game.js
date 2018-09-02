@@ -50,6 +50,7 @@ Game.init = function() {
 	//Game.createFloor();
 	Game.createLight();
 	Game.createLevel();
+	Game.createCollisionLevel();
 
 	// Renderer
 	Game.renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -63,7 +64,27 @@ Game.init = function() {
 	//Animation
 	Game.mixers=[];
 };
+Game.createCollisionLevel = function(){
+var loader = new THREE.JDLoader();
+	loader.load("../models/collision.jd", 
+            function (data)
+            {                            
+                for (var i = 0; i < data.objects.length; ++i)
+                {
+                    if (data.objects[i].type == "Mesh")
+                    {
+                    	var meshes=[];
+                        var mesh = null;
+                        var matArray = Game.createMaterials(data);
+                        mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
+                        console.log(data.objects[i].geometry);
+                        meshes.push(mesh);
+                        Game.scene.add(mesh);
+                    }
+                }        
+            });
 
+}
 Game.createLevel = function(){
 	var loader = new THREE.JDLoader();
 	loader.load("../models/model.jd", 
