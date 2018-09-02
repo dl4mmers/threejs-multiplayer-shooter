@@ -20,6 +20,8 @@ app.get('/', function(req, res){
 
 // Global Player Id Counter
 server.lastPlayerID = 0;
+server.teamRed = 0;
+server.teamBlue = 0;
 
 // Open port
 server.listen(3000, 'localhost' ,function(){
@@ -44,12 +46,27 @@ io.on('connection', function(socket)
 	//----------------------------------------------------------------------------------------
 	socket.on('new user', function(username)
 	{
-		// no need to delete scene anymore
-		//socket.emit('deleteallplayers');
-
+		// set username
 		socket.player.username = username;
 
-		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id } );
+		// add player to team with less players
+		if(server.teamRed == server.teamBlue)
+		{
+			socket.player.team = "red";
+			server.teamRed++;
+		}
+		else if(server.teamRed > server.teamBlue)
+		{
+			socket.player.team = "blue";
+			server.teamBlue++;
+		}
+		else 
+		{
+			socket.player.team = "red";
+			server.teamRed++;
+		}
+
+		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
 		socket.broadcast.emit('new user', socket.player);
 		socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
 	});
@@ -92,6 +109,12 @@ io.on('connection', function(socket)
 	{
         if(typeof(socket.player) != 'undefined') {
         	console.log("disconnect");
+
+        	if(socket.player.team = "red")
+        		server.teamRed--;
+        	else if(socket.player.team = "blue")
+        		server.teamBlue--;
+
         	socket.broadcast.emit('remove',socket.player.id);
         	socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat das Spiel verlassen.");
         }

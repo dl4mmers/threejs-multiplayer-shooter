@@ -22,10 +22,10 @@ var ballShape = new CANNON.Sphere(0.2);
 var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
 var shootDirection = new THREE.Vector3();
 var shootVelo = 80;
-var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 
 // Id
 Game.self = undefined;
+Game.team = undefined;
 
 // Time
 Game.prevTime = performance.now();
@@ -230,11 +230,17 @@ Game.addSelf = function()
     // Create Health
     Game.health = 100;
 
+    // Create Bullet material based on team color
+    if(Game.team == "red")
+    	Game.material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+    else if(Game.team == "blue")
+    	Game.material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+
     // Create EventListener for Collision Detection
     // When a body collides with another body, they both dispatch the "collide" event.
 	Game.sphereBody.addEventListener("collide",function(e)
 	{
-		if(e.body.name == "Bullet")
+		if(e.body.name == "Bullet" && e.body.team != Game.team)
 		{	
 			Game.health -= 5;
 
@@ -283,7 +289,7 @@ Game.addSelf = function()
 	        // create bullet
 	        var ballBody = new CANNON.Body( { mass: 1 } );
 	        ballBody.addShape(ballShape);
-	        var ballMesh = new THREE.Mesh( ballGeometry, material );
+	        var ballMesh = new THREE.Mesh( ballGeometry, Game.material );
 
 	        // add to world 
 	        Game.world.add(ballBody);
@@ -309,7 +315,8 @@ Game.addSelf = function()
 	        var data = 
 	        {
 	        	velocity: new THREE.Vector3(shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo),
-	        	position: new THREE.Vector3(x,y,z)
+	        	position: new THREE.Vector3(x,y,z),
+	        	team: Game.team
 	        }
 	        Client.shoot(data);
 
@@ -418,7 +425,15 @@ Game.shootPlayer = function(ShootData)
         var ballBody = new CANNON.Body( { mass: 1 } );
         ballBody.addShape(ballShape);
         ballBody.name = "Bullet";
-	    ballBody.team = ShootData.id;
+	    ballBody.team = ShootData.team;
+
+	    // material based on team color
+	    var material;
+	    if(ShootData.team == "red")
+	    	material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+	    else if(ShootData.team == "blue")
+	    	material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+
         var ballMesh = new THREE.Mesh( ballGeometry, material );
 
         // add to world 

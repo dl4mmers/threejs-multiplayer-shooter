@@ -48,6 +48,13 @@ canvas {
 	background-color: rgba(0,0,0,0.0);
 }
 
+#team-tag-overlay {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0,0,0,0.0);
+}
+
 #instructions {
 	width: 100%;
 	height: 100%;

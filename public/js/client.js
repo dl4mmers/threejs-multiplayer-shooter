@@ -40,9 +40,6 @@ $("#username-form").submit(function() {
     $('#messages').append($('<li>').text("Willkommen auf dem ThreeJS Multiplayer Server " + username + "!"));
     $('canvas').css("filter", "blur(0px)");
     $('canvas').css("transform", "scale(1.0)");
-	
-	// PointerlockControls
-	createPointerLockControls();
 
     return false;
   }
@@ -159,6 +156,10 @@ Client.socket.on('allplayers',function(data)
 		// set camera and id
 		Game.camera.position.set(0, 0, 0);
 	    Game.self = data.selfId;
+	    Game.team = data.team;
+
+	    // add PointerlockControls
+		createPointerLockControls();
 
 	    // add self
 	    Game.addSelf();
@@ -232,6 +233,7 @@ Client.setHealth = function(health)
 {
 	$("#healthbar").attr("style", "width: " + health + "%");
 	$("#healthbar").attr("aria-valuenow", health);
+	$("#healthbar").text(health);
 }
 
 // Controls
@@ -250,7 +252,7 @@ function createPointerLockControls() {
 
 	jQuery('<div id="instructions"><span style="font-size:40px">Click to play</span><br />(W, A, S, D = Move, SPACE = Jump, MOUSE = Look around)</div>', {
 	}).appendTo('#blocker');
-	// -->
+	// ---------------------------------->
 
 	// create crosshair overlay
 	jQuery('<div/>', {
@@ -260,24 +262,43 @@ function createPointerLockControls() {
 
 	jQuery('<img src="../img/crosshair.png" class="align-middle">', {
 	}).appendTo('#crosshair-overlay');
-	// -->
+	// ---------------------------------->
 
-	// create game overlay
+	// create healthbar overlay
 	jQuery('<div/>', {
 	    id: 'game-overlay',
 	    class: 'd-flex flex-column h-100'
 	}).insertBefore('canvas');
 
-	// add healthbar to game overlay
-	jQuery('<div style="margin-top: auto; padding: 20px"><div class="progress" style="width: 300px"><div id="healthbar" class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div></div></div>', {
+	jQuery('<div style="margin-top: auto; padding: 20px">&#x1F497;&#x1F497;&#x1F497;<div class="progress" style="width: 300px"><div id="healthbar" class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100</div></div></div>', {
 	}).appendTo('#game-overlay');
-	// -->
+	// ---------------------------------->
+
+	// create team tag overlay
+	jQuery('<div/>', {
+	    id: 'team-tag-overlay',
+	    class: 'd-flex align-items-center flex-column justify-content-center h-100'
+	}).insertBefore('canvas');
+	
+	if(Game.team == "red")
+	{
+		jQuery('<img style="margin-bottom:auto; padding: 15px" src="../img/red2.png" class="align-middle">', {
+		}).appendTo('#team-tag-overlay');
+	} 
+	else if (Game.team == "blue")
+	{
+		jQuery('<img style="margin-bottom:auto; padding: 15px" src="../img/blue2.png" class="align-middle">', {
+		}).appendTo('#team-tag-overlay');
+	}
+
+	// ---------------------------------->
 
 	// get blocker and instruction divs
 	var blocker = document.getElementById( 'blocker' );
 	var instructions = document.getElementById( 'instructions' );
 	$('#crosshair-overlay').addClass('hide');
 	$('#game-overlay').addClass('hide');
+	$('#team-tag-overlay').addClass('hide');
 
 	// PointerLock Requirements
 	var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
@@ -295,6 +316,7 @@ function createPointerLockControls() {
 				blocker.style.display = 'none';
 				$('#game-overlay').removeClass('hide');
 				$('#crosshair-overlay').removeClass('hide');
+				$('#team-tag-overlay').removeClass('hide');
 				
 
 			} else {
@@ -306,6 +328,7 @@ function createPointerLockControls() {
 				instructions.style.display = '';
 				$('#game-overlay').addClass('hide');
 				$('#crosshair-overlay').addClass('hide');
+				$('#team-tag-overlay').addClass('hide');
 
 			}
 
