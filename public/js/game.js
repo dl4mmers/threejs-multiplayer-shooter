@@ -13,7 +13,7 @@
 Game = {};
 
 // Cannon
-var physicsMaterial, balls=[], ballMeshes=[];
+var physicsMaterial, balls=[], ballMeshes=[], boxMeshes=[];
 Game.sphereShape;
 Game.sphereBody;
 
@@ -161,9 +161,13 @@ Game.animate = function ()
 	
 	// time
 	Game.prevTime = time;
+
+	//fix camera position
+	Game.camera.position.y+=1.5;
 	
 	// render
 	Game.renderer.render( Game.scene, Game.camera );
+		Game.camera.position.y-=1.5;
 		requestAnimationFrame( Game.animate );
 };
 
@@ -555,19 +559,19 @@ Game.clearScene = function(obj)
 	if(obj.texture)  obj.texture.dispose();
 
 	ballMeshes.length = 0;
-	//boxMeshes.length = 0;
+	boxMeshes.length = 0;
 
 	// Clear Cannon World
     for(var i=0; i<balls.length; i++){
         Game.world.remove(balls[i]);
     }
 
-//    for(var i=0; i<boxes.length; i++){
- //       Game.world.remove(boxes[i]);
-  //  }
+    for(var i=0; i<boxes.length; i++){
+       Game.world.remove(boxes[i]);
+    }
 
     balls.length = 0;
-    //boxes.length = 0;
+    boxes.length = 0;
 
 	Game.playerMap.forEach(function(value, key) 
 	{
