@@ -12,28 +12,67 @@
   <body>
 
     <!-- Username Layer -->
-    <div class="username-layer">
+    <div class="username-layer" id="login">
       <div class="container" style="text-align: center;">
-      <form id="username-form" action="" style="margin-top: 40%">
+        <form id="login-form" action="" style="margin-top: 40%">
+          <h1 class="display-1">ThreeJS Game</h1>
+          <div class="form-group row">
+            <div class="col-md-3"></div>
+            <div class="col-md-4" >
+              <div class="form-group">
+                <input id="username" type="username" class="form-control" id="exampleInputEmail1" placeholder="Username">
+              </div>
+                <div class="form-group">
+                <input id="password" type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+              </div>
+              <div class="col-md-12" style="padding: 0px 15px 0px 10px" >
+                <button type="submit" style="width: 100%" class="btn btn-primary btn-lg">Login</button>
+              </div>
+              <div class="col-md-12" style="padding: 15px 15px 0px 10px" >
+                <div style="width: 100%" id="registrieren" class="btn btn-success btn-lg">Registrieren</div>
+              </div>
+           
+           <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6"><div id="warning" class="alert alert-danger" role="alert"></div></div>
+            <div class="col-md-3"></div>
+          </div>
+        </form>     
+      </div>
+    </div>
+  </div>
+  
+  <div class="Register-layer" id="register">
+    <div class="container" style="text-align: center;">
+      <form id="register-form" action="" style="margin-top: 40%">
         <h1 class="display-1">ThreeJS Game</h1>
         <div class="form-group row">
           <div class="col-md-3"></div>
-          <div class="col-md-4" style="padding: 0px 0px 0px 15px">
-            <input id="username" autocomplete="off" class="form-control form-control-lg" type="text" placeholder="Gib deinen Nickname ein">
+          <div class="col-md-4" >
+            <div class="form-group">
+              <input id="newemail" type="email" class="form-control"  placeholder="Email">
+            </div>
+              <div class="form-group">
+              <input id="newusername" type="username" class="form-control"  placeholder="Username">
+            </div>
+            <div class="form-group">
+              <input id="newepassword" type="password" class="form-control" placeholder="Password">
+            </div>
+            <div class="col-md-12" style="padding: 0px 15px 0px 10px" >
+              <button id="acceptRegister" type="submit" style="width: 100%" class="btn btn-primary btn-lg">Registerieren</button>
+            </div>
+            <div class="col-md-12" style="padding: 15px 15px 0px 10px" >
+              <div id="zurueck" style="width: 100%" class="btn btn-success btn-lg">Zurück</div>
+            </div>
           </div>
-          <div class="col-md-2" style="padding: 0px 15px 0px 0px">
-            <button class="btn btn-primary btn-lg" style="width: 100%">Send</button>
+           <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6"><div id="regwarn" class="alert alert-danger" role="alert"></div></div>
+            <div class="col-md-3"></div>
           </div>
-          <div class="col-md-3"></div>
-        </div>
-        <div class="row">
-          <div class="col-md-3"></div>
-          <div class="col-md-6"><div id="warning" class="alert alert-danger" role="alert"></div></div>
-          <div class="col-md-3"></div>
-        </div>
       </form>
-      </div>
     </div>
+  </div>
 
     <!-- Chat -->
     <div class="chat-window" style="padding: 25px 25px 25px 25px">
@@ -49,7 +88,6 @@
       </div>
       </form>
     </div>
-
   <!-- Dependencies-->
   <script src="../socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>

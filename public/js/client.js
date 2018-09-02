@@ -8,31 +8,69 @@ Client.socket = io();
 $("#chat-form").hide();
 $("#warning").hide();
 $("#username").focus();
-var username;
-
+var usernameLogin;
+var passwordLogin;
 // Forms
 //---------------------------------------------------
+$("#registrieren").click(function() {
+	$("#login-form").fadeOut("slow", function() 
+	{
+		$("#register-form").fadeIn("slow");
+		$("#regwarn").hide();
+	});
+});
 
+$("#zurueck").click(function() {
+	$("#register-form").fadeOut("slow", function() 
+	{
+		$("#login-form").fadeIn("slow");
+	});
+});
+
+//Registerieren
+$("#register-form").submit(function() {
+
+  	var email	   	= $('#newemail').val();
+  	var username 	= $('#newusername').val();
+  	var password 	= $('#newepassword').val();
+	
+	if(email == "" || username == "" || password == "") {
+	    $("#regwarn").text("Email, Username und Password darf nicht leer sein!");
+	    $("#regwarn").show();
+	    return false;
+
+	} else if(username.length < 4 || username.length > 16 || password.length < 4) {
+	    $("#regwarn").text("Der Nickname und Password muss mindestens 4 zeichen enthalten");
+	    $("#regwarn").show();
+	    return false;
+
+	} else {
+
+  	Client.socket.emit('registrieren', email, username, password);
+    return true;
+	}
+});
 // Username Form
-$("#username-form").submit(function() {
+$("#login-form").submit(function() {
 
-  var input = $('#username').val();
-
-  if(input == "") {
-    $("#warning").text("Der Nickname darf nicht leer sein!");
+  var username = $('#username').val();
+  var password = $('#password').val();
+  if(username == "" && password == "") {
+    $("#warning").text("Der Username oder Password darf nicht leer sein!");
     $("#warning").show();
     return false;
 
-  } else if(input.length < 4 || input.length > 16) {
-    $("#warning").text("Der Nickname muss zwischen 4 und 16 Zeichen haben!");
+  } else if(username.length < 4 || username.length > 16 && password.length < 4) {
+    $("#warning").text("Der Nickname und Password muss mindestens 4 zeichen enthalten");
     $("#warning").show();
     return false;
 
   } else {
 
   	// ask for new Player
-    username = input;
-    Client.socket.emit('new user', input);
+    usernameLogin = username;
+    passwordLogin = password;
+    Client.socket.emit('login user', {usernameLogin, passwordLogin});
 
     // edit gui
     $('#username').val('');
