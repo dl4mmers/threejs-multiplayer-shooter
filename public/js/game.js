@@ -246,11 +246,19 @@ Game.addSelf = function()
 
 			// if player is dead respawn him 
 			// idea: create random respawn points based on level layout and team gameplay
-			// todo: set team points += 1 for killing other team players
 			if(Game.health == 0)
 			{
+				// player gets killed => opponent team score += 1
+				var data = { death: Game.team };
+				Client.setScore(data);
+
+				// respawn
 				Game.health = 100;
-				Game.sphereBody.position.set(0, 10, 0);
+
+				console.log(Game.sphereBody);
+				Game.sphereBody.position.set(0, 2, 0);
+				console.log(Game.sphereBody);
+
 			}
 			
 			Client.setHealth(Game.health);
@@ -348,11 +356,17 @@ Game.addPlayer = function(player)
 {
 
 	console.log("AddPlayer");
+	console.log(player);
 
 	// Add Sphere
 	var ballShape = new CANNON.Sphere(1.0);
 	var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
-	var material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+	var material;
+
+	if(player.team == "red")
+		material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+	else if(player.team == "blue")
+		material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
 
     // create cannon body
     var ballBody = new CANNON.Body( { mass: 0 } );

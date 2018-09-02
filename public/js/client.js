@@ -122,6 +122,13 @@ Client.socket.on('shoot', function(shootData)
 	Game.shootPlayer(shootData);
 });
 
+// Socket Event => Set score
+Client.socket.on('score', function(score) 
+{
+	$("#score-red").text(score.red);
+	$("#score-blue").text(score.blue);
+});
+
 // Socket Event => Player disconnected
 Client.socket.on('remove', function(id)
 {
@@ -170,11 +177,14 @@ Client.socket.on('allplayers',function(data)
 		if(data.allPlayers.length != 0)
 		{
 			playerString = "Aktive Spieler: ";
+			console.log(Game.playerMap);
 
 		    for(var i = 0; i < data.allPlayers.length; i++) 
 		    {
-		    	if(!Game.playerMap.has(i) && Game.self != data.allPlayers[i].id && data.allPlayers[i].username !== "spectator")
+		    	if(!Game.playerMap.has(data.allPlayers[i].id) && Game.self != data.allPlayers[i].id && data.allPlayers[i].username !== "spectator")
+		    	{
 		        	Game.addPlayer(data.allPlayers[i]);
+		    	}
 
 		        playerString += ("[" + data.allPlayers[i].username + "] ");
 		    }
@@ -236,8 +246,11 @@ Client.setHealth = function(health)
 	$("#healthbar").text(health);
 }
 
-// todo score event
-// set team score
+// Set team score
+Client.setScore = function(score)
+{
+	Client.socket.emit('score', score);
+}
 
 // Controls
 //---------------------------------------------------

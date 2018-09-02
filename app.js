@@ -20,8 +20,14 @@ app.get('/', function(req, res){
 
 // Global Player Id Counter
 server.lastPlayerID = 0;
+
+// player team counter
 server.teamRed = 0;
 server.teamBlue = 0;
+
+// team score
+server.scoreRed = 0;
+server.scoreBlue = 0;
 
 // Open port
 server.listen(3000, 'localhost' ,function(){
@@ -83,6 +89,7 @@ io.on('connection', function(socket)
 		socket.broadcast.emit('move', moveData);
 	});
 
+
 	// shoot
 	//----------------------------------------------------------------------------------------
 	socket.on('shoot', function(shootData) 
@@ -92,6 +99,22 @@ io.on('connection', function(socket)
 
 		// broadcast movement
 		socket.broadcast.emit('shoot', shootData);
+	});
+
+
+	// score
+	//----------------------------------------------------------------------------------------
+	socket.on('score', function(score) 
+	{
+		// add id
+		if(score.death == "red")
+			server.scoreBlue++;
+		else if(score.death == "blue")
+			server.scoreRed++;
+
+		var data = { red: server.scoreRed, blue: server.scoreBlue };
+		// broadcast movement
+		io.emit('score', data);
 	});
 
 
@@ -110,9 +133,10 @@ io.on('connection', function(socket)
         if(typeof(socket.player) != 'undefined') {
         	console.log("disconnect");
 
-        	if(socket.player.team = "red")
+
+        	if(socket.player.team == "red")
         		server.teamRed--;
-        	else if(socket.player.team = "blue")
+        	else if(socket.player.team == "blue")
         		server.teamBlue--;
 
         	socket.broadcast.emit('remove',socket.player.id);
