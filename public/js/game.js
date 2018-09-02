@@ -555,19 +555,19 @@ Game.clearScene = function(obj)
 	if(obj.texture)  obj.texture.dispose();
 
 	ballMeshes.length = 0;
-	boxMeshes.length = 0;
+	//boxMeshes.length = 0;
 
 	// Clear Cannon World
     for(var i=0; i<balls.length; i++){
         Game.world.remove(balls[i]);
     }
 
-    for(var i=0; i<boxes.length; i++){
-        Game.world.remove(boxes[i]);
-    }
+//    for(var i=0; i<boxes.length; i++){
+ //       Game.world.remove(boxes[i]);
+  //  }
 
     balls.length = 0;
-    boxes.length = 0;
+    //boxes.length = 0;
 
 	Game.playerMap.forEach(function(value, key) 
 	{
