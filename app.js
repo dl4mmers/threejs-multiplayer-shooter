@@ -75,17 +75,46 @@ io.on('connection', function(socket){
 
 	// new player
 	socket.on('login user', function(username, password){
-		//Perform SELECT Operation
 		
-		socket.emit('deleteallplayers');
-		socket.player = {
-			id: server.lastPlayerID++,
-			username: username,
-			position: new THREE.Object3D(0, 10, 0)
-		};
-		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id } );
-		socket.broadcast.emit('new user', socket.player);
-		socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
+var res = [];
+		var selectUser = "SELECT * FROM users WHERE username = '" + username + "'";
+	  	var selectPassword = "SELECT * FROM users WHERE password = '" + password + "'";
+	  	//user exist
+	  	con.query(selectUser,  function(error, result, field){
+			if (error) {
+			    console.log(error);
+			    socket.write("fail internal error"+"\r\n");
+			}
+			if (result.length  > 0) {
+			    con.query(selectPassword,  function(errorr, results, fieldo){
+					if (errorr) {
+			    		console.log(errorr);
+			    		socket.write("fail internal error"+"\r\n");
+					}
+					if (results.length  > 0) {
+			    		socket.emit('deleteallplayers');
+						socket.player = {
+							id: server.lastPlayerID++,
+							username: username,
+							position: new THREE.Object3D(0, 10, 0)
+						};
+						socket.emit('login success', username);
+						socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id } );
+						socket.broadcast.emit('new user', socket.player);
+						socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
+
+					} else {
+									    							console.log("2");
+			    		console.log('Password is wrong');
+					}
+				});
+
+			} else {
+				console.log("User does not exist");
+			}
+		});
+		
+
 	});
 
 	// movement

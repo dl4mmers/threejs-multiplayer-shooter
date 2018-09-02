@@ -53,37 +53,22 @@ $("#register-form").submit(function() {
 // Username Form
 $("#login-form").submit(function() {
 
-  var username = $('#username').val();
-  var password = $('#password').val();
-  if(username == "" && password == "") {
+  var logusername = $('#username').val();
+  var logpassword = $('#password').val();
+  
+  if(logusername == "" || logpassword == "") {
     $("#warning").text("Der Username oder Password darf nicht leer sein!");
     $("#warning").show();
     return false;
 
-  } else if(username.length < 4 || username.length > 16 && password.length < 4) {
+  } else if(logusername.length < 4 || logusername.length > 16 && logpassword.length < 4) {
     $("#warning").text("Der Nickname und Password muss mindestens 4 zeichen enthalten");
     $("#warning").show();
     return false;
 
   } else {
 
-  	// ask for new Player
-    usernameLogin = username;
-    passwordLogin = password;
-    Client.socket.emit('login user', {usernameLogin, passwordLogin});
-
-    // edit gui
-    $('#username').val('');
-    $(".username-layer").hide();
-    $('#messages').append($('<li>').text("Willkommen auf dem ThreeJS Multiplayer Server " + username + "!"));
-    $('canvas').css("filter", "blur(0px)");
-    $('canvas').css("transform", "scale(1.0)");
-	
-	// PointerlockControls
-	createPointerLockControls();
-
-	// KeyboardListeners
-	addKeyListeners();
+    Client.socket.emit('login user', logusername, logpassword);
 
     return false;
   }
@@ -146,6 +131,23 @@ Client.socket.on('chat message', function(msg){
   $("#messages").fadeIn();
 });
 
+Client.socket.on('login success', function(selectUser){
+	
+	    // edit gui
+	$("#login-form").hide();
+	$("#register-form").hide();
+    $('#selectUser').val('');
+    $(".selectUser-layer").hide();
+    $('#messages').append($('<li>').text("Willkommen auf dem ThreeJS Multiplayer Server " + selectUser + "!"));
+    $('canvas').css("filter", "blur(0px)");
+    $('canvas').css("transform", "scale(1.0)");
+	
+	// PointerlockControls
+	createPointerLockControls();
+
+	// KeyboardListeners
+	addKeyListeners();
+});
 
 // Socket Event => New Player
 Client.socket.on('new user', function(player) {
