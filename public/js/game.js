@@ -13,7 +13,7 @@
 Game = {};
 
 // Cannon
-var physicsMaterial, balls=[], ballMeshes=[];
+var physicsMaterial, balls=[], ballMeshes=[], boxMeshes=[];
 Game.sphereShape;
 Game.sphereBody;
 
@@ -45,7 +45,7 @@ Game.initCannon = function()
     Game.world.defaultContactMaterial.contactEquationStiffness = 1e9;
     Game.world.defaultContactMaterial.contactEquationRelaxation = 4;
 
-    solver.iterations = 7;
+    solver.iterations =1;
     solver.tolerance = 0.1;
     var split = true;
     if(split)
@@ -54,7 +54,7 @@ Game.initCannon = function()
         Game.world.solver = solver;
 
     Game.world.gravity.set(0,-20,0);
-    Game.world.broadphase = new CANNON.NaiveBroadphase();
+    Game.world.broadphase = new CANNON.NaiveBroadphase();//GridBroadphase(new CANNON.Vec3(0,0,0),new CANNON.Vec3(450,10,500),500,10,500);
 
     // Create a slippery material (friction coefficient = 0.0)
     physicsMaterial = new CANNON.Material("slipperyMaterial");
@@ -84,8 +84,8 @@ Game.initThree = function()
 
 	// Scene
 	Game.scene = new THREE.Scene();
-	Game.scene.background = new THREE.Color( 0xffffff );
-	Game.scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
+	Game.scene.background = new THREE.Color( 0x000000 );
+	Game.scene.fog = new THREE.Fog( 0xA1FF00, 0, 750 );
 
 	// PlayerMap
 	Game.playerMap = new Map();
@@ -106,8 +106,11 @@ Game.initThree = function()
 	// Init Level
 	//-----------------------------------------------------------------------
 
-	Game.createFloor();
+	//Game.createFloor();
 	Game.createLight();
+	Game.createLevel();
+	Game.createCollisionLevel();
+	Game.mixers=[];
 	
 };
 
@@ -116,8 +119,8 @@ Game.initThree = function()
 //
 Game.animate = function () 
 {
-
-	requestAnimationFrame( Game.animate );
+	//if(Game.sphereBody)
+	//console.log(Game.sphereBody.position);
 
 	// delta time
 	var time = performance.now();
@@ -141,7 +144,7 @@ Game.animate = function ()
 
 	
 	// update Debug Renderer
-	Game.cannonDebugRenderer.update();
+	//Game.cannonDebugRenderer.update();
 
 	// update controls and self position ONLY if not in spectate mode
 	if(Game.self !== "spectate" && Game.self !== undefined)
@@ -149,12 +152,24 @@ Game.animate = function ()
 		Game.updatePosAndRot();
 		Game.controls.update( delta );
 	}
+
+	//Update Bone&Line Animations
+	for (var i = 0; i < Game.mixers.length; ++i){
+	   	Game.mixers[i].update(delta); 
+			// ... the rest of your code
+	}
+
 	
 	// time
 	Game.prevTime = time;
+
+
+	Game.camera.position.y+=1.5;	//fix camera position
 	
 	// render
 	Game.renderer.render( Game.scene, Game.camera );
+	Game.camera.position.y-=1.5;	//fix camera position
+	requestAnimationFrame( Game.animate );
 };
 
 
@@ -192,13 +207,104 @@ Game.createFloor = function()
 	var floor = new THREE.Mesh( floorGeometry, floorMaterial );
 	Game.scene.add( floor );
 }
+Game.createCollisionLevel = function(){
+	var loader = new THREE.ColladaLoader( );
+		loader.load( '../models/collision.dae', function ( collada ) {
+			createPhysX(collada, true, 1, Game.world);
+		} );
 
+
+}
+Game.createLevel = function(){
+	var loader = new THREE.JDLoader();
+	loader.load("../models/model.jd", 
+            function (data)
+            {                            
+                for (var i = 0; i < data.objects.length; ++i)
+                {
+                    if (data.objects[i].type == "Mesh" || data.objects[i].type == "SkinnedMesh")
+                    {
+                    	var meshes=[];
+                        var mesh = null;
+                        var matArray = Game.createMaterials(data);
+                        if (data.objects[i].type == "SkinnedMesh")
+                        {
+                            mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
+                            mesh.frustumCulled = false;
+                            console.log(mesh);
+                        }
+                        else // Mesh
+                        {
+                            mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
+                        }
+                        meshes.push(mesh);
+                        Game.scene.add(mesh);
+ 
+                        //Now we need THREE.AnimationMixer to play the animation.
+                        if (mesh && mesh.geometry.animations)
+                        {
+                            var mixer = new THREE.AnimationMixer(mesh);
+                            Game.mixers.push(mixer);
+                            var action = mixer.clipAction( mesh.geometry.animations[0] );
+                            action.play();
+                        }
+                    }
+                    else if (data.objects[i].type == "Line")
+                    {
+                        var jd_color = data.objects[i].jd_object.color;
+                        var color1 = new THREE.Color( jd_color[0] / 255, jd_color[1] / 255, jd_color[2] / 255 );
+                        var material = new THREE.LineBasicMaterial({ color: color1}); 
+                        var line = new THREE.Line(data.objects[i].geometry, material);
+                        Game.scene.add(line);
+ 
+                        if (line.geometry.animations)
+                        {                                        
+                            var mixer = new THREE.AnimationMixer(line);
+                            Game.mixers.push(mixer);                                        
+                            var action = mixer.clipAction(line.geometry.animations[0]);
+                            action.play();
+                        }
+                    }
+                }        
+            });
+}
+Game.createMaterials=function(data)
+        {
+            var matArray = [];
+            for (var j = 0; j < data.materials.length; ++j)
+            {
+                var mat = new THREE.MeshPhongMaterial({});
+                mat.copy(data.materials[j]);
+                mat.side = THREE.DoubleSide;
+
+                //mat.transparent = true;
+                matArray.push(mat);
+            }
+            return matArray;
+        }
 
 Game.createLight = function() 
 {
-	var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
+	// Light
+/*	var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
 	light.position.set( 0.5, 1, 0.75 );
-	Game.scene.add( light );
+	Game.scene.add( light );*/
+	//Alien Light
+	var plight = new THREE.PointLight( 0xA1FF00, 1, 100 );
+	plight.position.set( 0, 10, 0 );
+	Game.scene.add( plight );
+	//Terminal Light
+	var plight = new THREE.PointLight( 0x3D85C6, 1, 100 );
+	plight.position.set( 0, 10, 1 );
+	Game.scene.add( plight );
+	//stage light
+	var plight = new THREE.PointLight( 0x3D85C6, 3, 100 );
+	plight.position.set( 40, 1, 140 );
+	Game.scene.add( plight );
+
+	var plight = new THREE.PointLight( 0xA1FF00, 1, 100 );
+	plight.position.set( -20, 1, 80 );
+	Game.scene.add( plight );
 }
 
 
@@ -272,6 +378,7 @@ Game.addSelf = function()
     var groundShape = new CANNON.Plane();
     var groundBody = new CANNON.Body({ mass: 0 });
     groundBody.addShape(groundShape);
+    groundBody.position.set(0,0.2,0);
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
     Game.world.add(groundBody);
 
@@ -487,7 +594,7 @@ Game.clearScene = function(obj)
     }
 
     for(var i=0; i<boxes.length; i++){
-        Game.world.remove(boxes[i]);
+       Game.world.remove(boxes[i]);
     }
 
     balls.length = 0;
@@ -515,3 +622,95 @@ Game.onWindowResize = function()
 Game.initCannon();
 Game.initThree();
 Game.animate();
+
+
+
+
+function createPhysX(dae, dsMax, PhysiScaleFactor, world) {
+
+  console.log("Konvertiervorgang...");
+  var i = 0;
+  // console.log(dae);
+
+  if( dsMax ) {
+
+    var sceneModel = dae.scene;
+
+    for ( i = 1; i < sceneModel.children.length; i++ ) 
+    {
+
+      if( sceneModel.children[i].children[0]&&(sceneModel.children[i].children[0].geometry.attributes.position.array.length==108) ) 
+      {
+      	//console.log(sceneModel.children[i].children[0].geometry.attributes.position.array.length);
+        //var jsModel  = new THREE.Mesh( sceneModel.children[i].children[0].geometry, sceneModel.children[i].children[0].material );
+        var vertices = sceneModel.children[i].children[0].geometry.attributes.position.array;//jsModel.geometry.position;
+        var xmin, xmax, ymin, ymax, zmin, zmax;
+       // console.log("length: "+vertices.length);
+        for( var j = 0; j < vertices.length; j+=3 )
+        {
+          if ( j < 1 )
+          {
+				xmin = vertices[j];
+				xmax = vertices[j];
+				ymin = vertices[j+1];
+				ymax = vertices[j+1];
+				zmin = vertices[j+2];
+				zmax = vertices[j+2];
+          } 
+          else 
+          {
+				if( vertices[j]<xmin ) xmin = vertices[j];
+				if( vertices[j]>xmax ) xmax = vertices[j];
+				if( vertices[j+1]<ymin ) ymin = vertices[j+1];
+				if( vertices[j+1]>ymax ) ymax = vertices[j+1];
+				if( vertices[j+2]<zmin ) zmin = vertices[j+2];
+				if( vertices[j+2]>zmax ) zmax = vertices[j+2];
+          }
+        }
+
+        var Coords = new THREE.Vector3(0,0,0);
+
+        // get coordinates, multiplied by scale (to fix scale)
+        Coords.x = (xmax - xmin) * PhysiScaleFactor * sceneModel.children[i].scale.x;
+        Coords.y = (ymax - ymin) * PhysiScaleFactor * sceneModel.children[i].scale.y;
+        Coords.z = (zmax - zmin) * PhysiScaleFactor * sceneModel.children[i].scale.z;
+        
+
+    
+        // create collision mesh
+        var box     = new CANNON.Box( new CANNON.Vec3(( Coords.x/2 ),( Coords.y/2 ),( Coords.z/2 )) );
+        var boxBody = new CANNON.Body( {mass:0, shape: box} );
+
+        // fix Position
+        boxBody.position.set( 
+          PhysiScaleFactor*sceneModel.children[i].position.x, 
+          PhysiScaleFactor*sceneModel.children[i].position.z, 
+          PhysiScaleFactor*sceneModel.children[i].position.y*-1
+        );
+
+        // fix Rotation
+        var quat = new THREE.Quaternion();
+        var rot=sceneModel.children[i].rotation;
+        rot.x-=1.57079632679;
+        //quat=sceneModel.children[i].quaternion;
+		quat.setFromEuler( (rot));
+		//quat=quat*sceneModel.children[i].quaternion
+        boxBody.quaternion.x = quat.x;
+        boxBody.quaternion.y = quat.y;
+        boxBody.quaternion.z = quat.z;
+        boxBody.quaternion.w = quat.w;
+        
+
+        //boxBody.quaternion=quat;
+       // boxBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
+
+        // add
+        
+        world.add(boxBody);
+
+   		}
+	}
+  }
+
+  console.log("Es wurden " + i + " Elemente zu CannonJS konvertiert.");
+}
