@@ -466,6 +466,55 @@ Game.addPlayer = function(player)
 	var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
 	var material;
 
+
+
+
+		var loader = new THREE.JDLoader();
+	loader.load("../models/character.jd", 
+    
+		// onLoad Callback
+	    function (data)
+	    {                            
+	        for (var i = 0; i < data.objects.length; ++i)
+	        {
+	            if (data.objects[i].type == "Mesh" || data.objects[i].type == "SkinnedMesh")
+	            {
+	            	var meshes=[];
+	                var mesh = null;
+	                var matArray = Game.createMaterials(data);
+	                if (data.objects[i].type == "SkinnedMesh")
+	                {
+	                    mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
+	                    mesh.frustumCulled = false;
+	                    console.log(mesh);
+	                }
+	                else // Mesh
+	                {
+	                    mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
+	                }
+	                meshes.push(mesh);
+	                Game.scene.add(mesh);
+
+	                //Now we need THREE.AnimationMixer to play the animation.
+	                if (mesh && mesh.geometry.animations)
+	                {
+	                    var mixer = new THREE.AnimationMixer(mesh);
+	                    Game.mixers.push(mixer);
+	                    var action = mixer.clipAction( mesh.geometry.animations[0] );
+	                    action.play();
+	                }
+	            }
+	        }        
+	    }
+    );
+
+
+
+
+
+
+
+
 	if(player.team == "red")
 		material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 	else if(player.team == "blue")
