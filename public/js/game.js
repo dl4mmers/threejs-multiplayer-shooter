@@ -152,7 +152,7 @@ Game.animate = function ()
 		Game.updatePosAndRot();
 		Game.controls.update( delta );
 	}
-	//sdf
+	//sd
 	//Update Bone&Line Animations
 	for (var i = 0; i < Game.mixers.length; ++i){
 	   	Game.mixers[i].update(delta); 
