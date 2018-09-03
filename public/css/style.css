@@ -15,6 +15,18 @@ canvas {
 	transform: scale(1.1);
 }
 
+.statistik-window {
+  	display: flex;
+ 	flex-direction: column;
+    position: fixed;
+    width: 50%;
+    height: 50%;
+    left: 0;
+    top: 0;
+    background-color: rgba(255,255,255,0.0);
+    z-index: 2;
+}
+
 .chat-window {
   	display: flex;
  	flex-direction: column;

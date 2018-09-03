@@ -8,11 +8,12 @@ Client.socket = io();
 $("#chat-form").hide();
 $("#warning").hide();
 $("#username").focus();
+$("#statistik-form").hide();
 var username;
 var mySound;
 var letsgo;
 mySound = new Audio('audio/Battle.mp3');
-mySound.play();
+//mySound.play();
 // Forms
 //---------------------------------------------------
 
@@ -79,15 +80,26 @@ $("#chat-form").submit(function(){
 	return false;
 });
 
-// Chat Fadeout
-setInterval( function() { 
-	if( $("#messages").css('display') != 'none' ) {
-		$("#messages").fadeOut( "slow" );
-	}
-}, 20000);
-
-
 // Chat Input
+$(document).keydown(function(ep) {
+
+	// Enter pressed => show chat window   
+	if(ep.which == 9 && Game.self != undefined) 
+	{
+		ep.preventDefault();
+
+		// remove key eventlisteners
+		Game.controls.removeListeners();
+
+		$("#statistik-form").toggle();
+		$("#nameblue").fadeIn();
+		$("#namered").fadeIn();
+
+	}
+
+});
+
+// Statistik Input
 $(document).keydown(function(e) {
 
 	// Enter pressed => show chat window   
@@ -105,6 +117,14 @@ $(document).keydown(function(e) {
 	}
 
 });
+
+// Chat Fadeout
+setInterval( function() { 
+	if( $("#messages").css('display') != 'none' ) {
+		$("#messages").fadeOut( "slow" );
+	}
+}, 20000);
+
 
 // Socket Listeners
 //---------------------------------------------------

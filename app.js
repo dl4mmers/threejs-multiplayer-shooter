@@ -72,6 +72,7 @@ io.on('connection', function(socket)
 			server.teamRed++;
 		}
 
+		//socket.emit('statistik');
 		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
 		socket.broadcast.emit('new user', socket.player);
 		socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
