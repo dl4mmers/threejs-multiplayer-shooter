@@ -285,9 +285,10 @@ Game.addSelf = function()
 	//
 
 	// click eventlistener
-	window.addEventListener("click",function(e) 
+	window.addEventListener("mousedown",function(e) 
 	{
-	    if( Game.controls.enabled==true )
+
+	    if( Game.controls.enabled && e.which == 1)
 	    {
 	    	// get player pos
 	        var x = Game.sphereBody.position.x;

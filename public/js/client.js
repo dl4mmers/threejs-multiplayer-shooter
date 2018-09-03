@@ -50,14 +50,17 @@ $("#username-form").submit(function() {
 // Chat Form
 $("#chat-form").submit(function(){
 
-  // build username message
-  var message = username + ": " + $('#m').val();
+	// build username message
+	var message = username + ": " + $('#m').val();
 
-  // send to socket
-  Client.socket.emit('chat message', message);
-  $('#m').val('');
-  $("#chat-form").toggle();
-  return false;
+  	// readd eventlisteners
+  	Game.controls.readdListeners();
+
+	// send to socket
+	Client.socket.emit('chat message', message);
+	$('#m').val('');
+	$("#chat-form").toggle();
+	return false;
 });
 
 // Chat Fadeout
@@ -71,23 +74,18 @@ setInterval( function() {
 // Chat Input
 $(document).keydown(function(e) {
 
-	// get username
-	var key = e.which;
-
-	// Enter pressed    
-	if(e.which == 13 && !$("#m").val() && $(".username-layer").css('display') == 'none') {
+	// Enter pressed => show chat window   
+	if(e.which == 13 && !$("#m").val() && Game.self != undefined) 
+	{
 		e.preventDefault();
+
+		// remove key eventlisteners
+		Game.controls.removeListeners();
+
 		$("#chat-form").toggle();
 		$("#m").focus();
 		$("#messages").fadeIn();
 
-	} else if( (e.which == 87 || e.which == 65 || e.which == 83 || e.which == 68) && 
-			   !$("#m").val() && 
-			   $(".username-layer").css('display') == 'none' && 
-			   $("#chat-form").css('display') == 'none') 
-	{
-		e.preventDefault();
-		//Client.socket.emit('move', key);
 	}
 
 });
@@ -100,6 +98,10 @@ $(document).keydown(function(e) {
 Client.socket.on('chat message', function(msg){
   $('#messages').append($('<li>').text(msg));
   $("#messages").fadeIn();
+
+  // auto scroll bot
+  var elem = document.getElementById('messages');
+  elem.scrollTop = elem.scrollHeight;
 });
 
 

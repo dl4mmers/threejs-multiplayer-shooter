@@ -124,6 +124,18 @@
     document.addEventListener( 'keydown', onKeyDown, false );
     document.addEventListener( 'keyup', onKeyUp, false );
 
+    this.removeListeners = function()
+    {
+        document.removeEventListener( 'keydown', onKeyDown, false );
+        document.removeEventListener( 'keyup', onKeyUp, false );
+    }
+
+    this.readdListeners = function()
+    {
+        document.addEventListener( 'keydown', onKeyDown, false );
+        document.addEventListener( 'keyup', onKeyUp, false );
+    }
+
     this.enabled = false;
 
     this.getObject = function () {
