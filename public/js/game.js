@@ -29,6 +29,7 @@ Game.team = undefined;
 
 // Time
 Game.prevTime = performance.now();
+var mySound;
 
 //
 // Cannon Physics Initialization
@@ -397,6 +398,8 @@ Game.addSelf = function()
 
 	    if( Game.controls.enabled && e.which == 1)
 	    {
+	    	mySound = new Audio('audio/laser3.mp3');
+	    	mySound.play();
 	    	// get player pos
 	        var x = Game.sphereBody.position.x;
 	        var y = Game.sphereBody.position.y;
@@ -437,6 +440,8 @@ Game.addSelf = function()
 	        Client.shoot(data);
 
 	    }
+	    //mySound.pause();
+		//mySound.currentTime = 0;
 	});
 }
 

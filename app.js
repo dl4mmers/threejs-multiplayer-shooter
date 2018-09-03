@@ -10,6 +10,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var THREE = require('three');
 
+
 // Static Resources Path
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -37,7 +38,6 @@ server.listen(3000, 'localhost' ,function(){
 // Create Socket on Connection
 io.on('connection', function(socket)
 {
-
 	// spectate
 	//----------------------------------------------------------------------------------------
 	socket.player = 
@@ -145,6 +145,8 @@ io.on('connection', function(socket)
     });
 
 });
+
+
 
 function getAllPlayers(){
     var players = [];

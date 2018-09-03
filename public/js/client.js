@@ -9,7 +9,10 @@ $("#chat-form").hide();
 $("#warning").hide();
 $("#username").focus();
 var username;
-
+var mySound;
+var letsgo;
+mySound = new Audio('audio/Battle.mp3');
+mySound.play();
 // Forms
 //---------------------------------------------------
 
@@ -30,6 +33,10 @@ $("#username-form").submit(function() {
 
   } else {
 
+
+    stopsound();
+    letsgo = new Audio('audio/lets_go.mp3'); 
+    letsgo.play();
   	// ask for new Player
     username = input;
     Client.socket.emit('new user', input);
@@ -46,6 +53,15 @@ $("#username-form").submit(function() {
 
 });
 
+function playsound(scr){
+	mySound = new Audio(scr);
+	mySound.play();
+}
+
+function stopsound(){
+	mySound.pause();
+	mySound.currentTime = 0;
+}
 
 // Chat Form
 $("#chat-form").submit(function(){
@@ -89,7 +105,6 @@ $(document).keydown(function(e) {
 	}
 
 });
-
 
 // Socket Listeners
 //---------------------------------------------------
