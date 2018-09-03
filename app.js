@@ -89,6 +89,17 @@ io.on('connection', function(socket)
 		socket.broadcast.emit('move', moveData);
 	});
 
+	// moving state
+	//----------------------------------------------------------------------------------------
+	socket.on('movingstate', function(state) 
+	{
+		// add id
+		data = { isMoving: state, id: socket.player.id};
+		
+		// broadcast movement
+		socket.broadcast.emit('movingstate', data);
+	});
+
 
 	// shoot
 	//----------------------------------------------------------------------------------------

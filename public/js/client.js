@@ -126,6 +126,11 @@ Client.socket.on('move', function(moveData) {
 	Game.movePlayer(moveData);
 });
 
+// Socket Event => Update Moving States
+Client.socket.on('movingstate', function(state) {
+	Game.animatePlayer(state);
+});
+
 // Socket Event => Shoot
 Client.socket.on('shoot', function(shootData) 
 {
@@ -244,6 +249,12 @@ Client.socket.on('deleteallplayers', function() {
 Client.move = function(data) 
 {
 	Client.socket.emit('move', data);
+}
+
+// Moving state
+Client.movingState = function(state)
+{
+	Client.socket.emit('movingstate', state);
 }
 
 // Push shoot data on socket

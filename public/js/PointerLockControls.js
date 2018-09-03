@@ -145,6 +145,14 @@
         document.addEventListener( 'keyup', onKeyUp, false );
     }
 
+    this.isMoving = function()
+    {
+        if(moveForward || moveBackward || moveLeft || moveRight)
+            return true;
+        else 
+            return false;
+    }
+
     this.enabled = false;
 
     this.getObject = function () {

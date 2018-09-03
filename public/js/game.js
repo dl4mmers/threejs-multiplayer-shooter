@@ -150,7 +150,7 @@ Game.animate = function ()
     // Update Players
 	Game.playerMap.forEach( function(value, key) 
 	{
-		value.mesh.position.set(value.body.position.x, value.body.position.y - 1.4, value.body.position.z)
+		value.mesh.position.set(value.body.position.x, value.body.position.y - 1.4, value.body.position.z);
 
 	}, Game.playerMap);
 
@@ -163,6 +163,7 @@ Game.animate = function ()
 	{
 
 		Game.updatePosAndRot();
+		Game.updateMovingState();
 		Game.controls.update( delta );
 	}
 
@@ -440,6 +441,13 @@ Game.addSelf = function()
 // Multiplayer Functions
 //
 
+Game.updateMovingState = function()
+{
+	var state = Game.controls.isMoving();
+
+	Client.movingState(state);
+}
+
 Game.updatePosAndRot = function()
 {
 	// get position
@@ -455,12 +463,38 @@ Game.updatePosAndRot = function()
 	Client.move(data);
 }
 
+Game.animatePlayer = function(data)
+{
+
+	//console.log(data);
+	// Get Cannon Object
+	var player = Game.playerMap.get(data.id);
+
+	if(data.isMoving)
+	{
+		for(var i = 0; i < player.mixers.length; i++)
+		{
+			var action = player.mixers[i].clipAction( player.meshes[i].geometry.animations[0] );
+			action.play();
+		}
+	} 
+	else 
+	{
+		for(var i = 0; i < player.mixers.length; i++)
+		{
+			var action = player.mixers[i].clipAction( player.meshes[i].geometry.animations[0] );
+			action.stop();
+		}
+	}
+
+}
 
 Game.addPlayer = function(player) 
 {
 
 	// load character
 	var playerMixers = [];
+	var playerMeshes = [];
 	var playerObject = new THREE.Object3D();
 
 	var charString;
@@ -494,6 +528,7 @@ Game.addPlayer = function(player)
 	                }
 
 	                // add mesh to object3d
+	                playerMeshes.push(mesh);
 	                playerObject.add(mesh);
 
 	                //Now we need THREE.AnimationMixer to play the animation.
@@ -527,6 +562,7 @@ Game.addPlayer = function(player)
     {
     	body: charBody,
     	mesh: playerObject,
+    	meshes: playerMeshes,
     	mixers: playerMixers,
     	name: player.id
     };
