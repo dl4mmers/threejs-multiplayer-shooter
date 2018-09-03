@@ -217,7 +217,7 @@ Game.createCollisionLevel = function(){
 }
 Game.createLevel = function(){
 	var loader = new THREE.JDLoader();
-	loader.load("../models/model.jd", 
+	loader.load("../models/character.jd", 
             function (data)
             {                            
                 for (var i = 0; i < data.objects.length; ++i)
