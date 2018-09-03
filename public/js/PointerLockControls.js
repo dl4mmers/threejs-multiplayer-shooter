@@ -22,6 +22,7 @@
     var moveBackward = false;
     var moveLeft = false;
     var moveRight = false;
+    var run = false;
 
     var canJump = false;
 
@@ -82,6 +83,10 @@
                 moveRight = true;
                 break;
 
+            case 16:
+                run = true;
+                break;
+
             case 32: // space
                 if ( canJump === true ){
                     velocity.y = jumpVelocity;
@@ -109,6 +114,10 @@
             case 40: // down
             case 83: // a
                 moveBackward = false;
+                break;
+
+            case 16:
+                run = false;
                 break;
 
             case 39: // right
@@ -154,7 +163,10 @@
 
         //if ( scope.enabled === false ) return;
 
-        delta *= 100;
+        if(run)
+            delta *= 300;
+        else
+            delta *= 200;
 
         inputVelocity.set(0,0,0);
 

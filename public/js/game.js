@@ -23,6 +23,11 @@ var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
 var shootDirection = new THREE.Vector3();
 var shootVelo = 80;
 
+// Loading Progress
+Game.loadingLevel = 0;
+Game.loadingCollision = 0;
+Game.finishedLoading = false;
+
 // Id
 Game.self = undefined;
 Game.team = undefined;
@@ -45,7 +50,7 @@ Game.initCannon = function()
     Game.world.defaultContactMaterial.contactEquationStiffness = 1e9;
     Game.world.defaultContactMaterial.contactEquationRelaxation = 4;
 
-    solver.iterations =1;
+    solver.iterations = 1;
     solver.tolerance = 0.1;
     var split = true;
     if(split)
@@ -106,7 +111,6 @@ Game.initThree = function()
 	// Init Level
 	//-----------------------------------------------------------------------
 
-	//Game.createFloor();
 	Game.createLight();
 	Game.createLevel();
 	Game.createCollisionLevel();
@@ -117,17 +121,27 @@ Game.initThree = function()
 //
 // Update Function
 //
+
 Game.animate = function () 
 {
-	//if(Game.sphereBody)
-	//console.log(Game.sphereBody.position);
+	requestAnimationFrame( Game.animate );
 
 	// delta time
 	var time = performance.now();
 	var delta = ( time - Game.prevTime ) / 1000;
 
 	// Cannon Simulation Loop
-	Game.world.step(1.0 / 60.0);
+	// Step twice with smaller value to ensure correct collision detection
+	// Its the same as calling step(1.0 / 60.0) one time
+	Game.world.step(1.0 / 120.0);
+	Game.world.step(1.0 / 120.0);
+
+	// get loading progress
+	if(!Game.finishedLoading)
+		Client.setLoadingProgress(Game.loadingLevel + Game.loadingCollision);
+
+	if( (Game.loadingLevel + Game.loadingCollision) == 100 && !Game.finishedLoading )
+		Game.finishedLoading = true;
 
     // Update ball positions
     for(var i=0; i< balls.length; i++){
@@ -153,150 +167,133 @@ Game.animate = function ()
 		Game.controls.update( delta );
 	}
 
-	//Update Bone&Line Animations
-	for (var i = 0; i < Game.mixers.length; ++i){
+	// Update Bone&Line Animations
+	for (var i = 0; i < Game.mixers.length; ++i)
+	{
 	   	Game.mixers[i].update(delta); 
-			// ... the rest of your code
 	}
-
-	
-	// time
-	Game.prevTime = time;
-
-
-	Game.camera.position.y+=1.5;	//fix camera position
 	
 	// render
 	Game.renderer.render( Game.scene, Game.camera );
-	Game.camera.position.y-=1.5;	//fix camera position
-	requestAnimationFrame( Game.animate );
+
+	// time
+	Game.prevTime = time;
 };
 
 
-Game.createFloor = function() 
-{
-
-	var floorGeometry = new THREE.PlaneBufferGeometry( 2000, 2000, 100, 100 );
-	floorGeometry.rotateX( - Math.PI / 2 );
-
-	// vertex displacement
-	var vertex = new THREE.Vector3();
-	var position = floorGeometry.attributes.position;
-	for ( var i = 0, l = position.count; i < l; i ++ ) {
-		vertex.fromBufferAttribute( position, i );
-		vertex.x += Math.random() / 5 - 10;
-		vertex.y += Math.random() * -1;
-		vertex.z += Math.random() / 5 - 10;
-		position.setXYZ( i, vertex.x, vertex.y, vertex.z );
-	}
-
-	// ensure each face has unique vertices
-	floorGeometry = floorGeometry.toNonIndexed(); 
-	position = floorGeometry.attributes.position;
-
-	// colors
-	var colors = [];
-	var color = new THREE.Color();
-	for ( var i = 0, l = position.count; i < l; i ++ ) {
-		color.setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
-		colors.push( color.r, color.g, color.b );
-	}
-	floorGeometry.addAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-
-	var floorMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
-	var floor = new THREE.Mesh( floorGeometry, floorMaterial );
-	Game.scene.add( floor );
-}
-Game.createCollisionLevel = function(){
-	var loader = new THREE.ColladaLoader( );
-		loader.load( '../models/collision.dae', function ( collada ) {
-			createPhysX(collada, true, 1, Game.world);
-		} );
-
-
-}
 Game.createLevel = function(){
 	var loader = new THREE.JDLoader();
 	loader.load("../models/model.jd", 
-            function (data)
-            {                            
-                for (var i = 0; i < data.objects.length; ++i)
-                {
-                    if (data.objects[i].type == "Mesh" || data.objects[i].type == "SkinnedMesh")
-                    {
-                    	var meshes=[];
-                        var mesh = null;
-                        var matArray = Game.createMaterials(data);
-                        if (data.objects[i].type == "SkinnedMesh")
-                        {
-                            mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
-                            mesh.frustumCulled = false;
-                            console.log(mesh);
-                        }
-                        else // Mesh
-                        {
-                            mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
-                        }
-                        meshes.push(mesh);
-                        Game.scene.add(mesh);
- 
-                        //Now we need THREE.AnimationMixer to play the animation.
-                        if (mesh && mesh.geometry.animations)
-                        {
-                            var mixer = new THREE.AnimationMixer(mesh);
-                            Game.mixers.push(mixer);
-                            var action = mixer.clipAction( mesh.geometry.animations[0] );
-                            action.play();
-                        }
-                    }
-                    else if (data.objects[i].type == "Line")
-                    {
-                        var jd_color = data.objects[i].jd_object.color;
-                        var color1 = new THREE.Color( jd_color[0] / 255, jd_color[1] / 255, jd_color[2] / 255 );
-                        var material = new THREE.LineBasicMaterial({ color: color1}); 
-                        var line = new THREE.Line(data.objects[i].geometry, material);
-                        Game.scene.add(line);
- 
-                        if (line.geometry.animations)
-                        {                                        
-                            var mixer = new THREE.AnimationMixer(line);
-                            Game.mixers.push(mixer);                                        
-                            var action = mixer.clipAction(line.geometry.animations[0]);
-                            action.play();
-                        }
-                    }
-                }        
-            });
-}
-Game.createMaterials=function(data)
-        {
-            var matArray = [];
-            for (var j = 0; j < data.materials.length; ++j)
-            {
-                var mat = new THREE.MeshPhongMaterial({});
-                mat.copy(data.materials[j]);
-                mat.side = THREE.DoubleSide;
+    
+		// onLoad Callback
+	    function (data)
+	    {                            
+	        for (var i = 0; i < data.objects.length; ++i)
+	        {
+	            if (data.objects[i].type == "Mesh" || data.objects[i].type == "SkinnedMesh")
+	            {
+	            	var meshes=[];
+	                var mesh = null;
+	                var matArray = Game.createMaterials(data);
+	                if (data.objects[i].type == "SkinnedMesh")
+	                {
+	                    mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
+	                    mesh.frustumCulled = false;
+	                    console.log(mesh);
+	                }
+	                else // Mesh
+	                {
+	                    mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
+	                }
+	                meshes.push(mesh);
+	                Game.scene.add(mesh);
 
-                //mat.transparent = true;
-                matArray.push(mat);
-            }
-            return matArray;
-        }
+	                //Now we need THREE.AnimationMixer to play the animation.
+	                if (mesh && mesh.geometry.animations)
+	                {
+	                    var mixer = new THREE.AnimationMixer(mesh);
+	                    Game.mixers.push(mixer);
+	                    var action = mixer.clipAction( mesh.geometry.animations[0] );
+	                    action.play();
+	                }
+	            }
+	            else if (data.objects[i].type == "Line")
+	            {
+	                var jd_color = data.objects[i].jd_object.color;
+	                var color1 = new THREE.Color( jd_color[0] / 255, jd_color[1] / 255, jd_color[2] / 255 );
+	                var material = new THREE.LineBasicMaterial({ color: color1}); 
+	                var line = new THREE.Line(data.objects[i].geometry, material);
+	                Game.scene.add(line);
+
+	                if (line.geometry.animations)
+	                {                                        
+	                    var mixer = new THREE.AnimationMixer(line);
+	                    Game.mixers.push(mixer);                                        
+	                    var action = mixer.clipAction(line.geometry.animations[0]);
+	                    action.play();
+	                }
+	            }
+	        }        
+	    },
+
+	    // onProgress Callback
+	    function( xhr ) 
+	    {
+	    	Game.loadingLevel = (xhr.loaded / xhr.total * 100) / 2;
+	    }
+    );
+}
+
+
+Game.createCollisionLevel = function()
+{
+	var loader = new THREE.ColladaLoader( );
+	loader.load( '../models/collision.dae', 
+
+		// onLoad Callback
+		function ( collada ) 
+		{
+			createPhysX(collada, true, 1, Game.world);
+		},
+
+		function ( xhr )
+		{
+			Game.loadingCollision = (xhr.loaded / xhr.total * 100) / 2;
+		} 
+
+	);
+
+}
+
+
+Game.createMaterials = function(data)
+{
+    var matArray = [];
+    for (var j = 0; j < data.materials.length; ++j)
+    {
+        var mat = new THREE.MeshPhongMaterial({});
+        mat.copy(data.materials[j]);
+        mat.side = THREE.DoubleSide;
+
+        //mat.transparent = true;
+        matArray.push(mat);
+    }
+    return matArray;
+}
+
 
 Game.createLight = function() 
 {
-	// Light
-/*	var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
-	light.position.set( 0.5, 1, 0.75 );
-	Game.scene.add( light );*/
 	//Alien Light
 	var plight = new THREE.PointLight( 0xA1FF00, 1, 100 );
 	plight.position.set( 0, 10, 0 );
 	Game.scene.add( plight );
+
 	//Terminal Light
 	var plight = new THREE.PointLight( 0x3D85C6, 1, 100 );
 	plight.position.set( 0, 10, 1 );
 	Game.scene.add( plight );
+
 	//stage light
 	var plight = new THREE.PointLight( 0x3D85C6, 3, 100 );
 	plight.position.set( 40, 1, 140 );
@@ -361,9 +358,7 @@ Game.addSelf = function()
 				// respawn
 				Game.health = 100;
 
-				console.log(Game.sphereBody);
 				Game.sphereBody.position.set(0, 2, 0);
-				console.log(Game.sphereBody);
 
 			}
 			
@@ -424,14 +419,14 @@ Game.addSelf = function()
 	        x += shootDirection.x * (Game.sphereShape.radius*1.02 + ballShape.radius);
 	        y += shootDirection.y * (Game.sphereShape.radius*1.02 + ballShape.radius);
 	        z += shootDirection.z * (Game.sphereShape.radius*1.02 + ballShape.radius);
-	        ballBody.position.set(x,y,z);
-	        ballMesh.position.set(x,y,z);
+	        ballBody.position.set(x,y+2,z);
+	        ballMesh.position.set(x,y+2,z);
 
 	      	// push on socket and broadcast
 	        var data = 
 	        {
 	        	velocity: new THREE.Vector3(shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo),
-	        	position: new THREE.Vector3(x,y,z),
+	        	position: new THREE.Vector3(x,y+2,z),
 	        	team: Game.team
 	        }
 	        Client.shoot(data);
@@ -682,7 +677,8 @@ function createPhysX(dae, dsMax, PhysiScaleFactor, world) {
         var boxBody = new CANNON.Body( {mass:0, shape: box} );
 
         // fix Position
-        boxBody.position.set( 
+        boxBody.position.set
+        ( 
           PhysiScaleFactor*sceneModel.children[i].position.x, 
           PhysiScaleFactor*sceneModel.children[i].position.z, 
           PhysiScaleFactor*sceneModel.children[i].position.y*-1

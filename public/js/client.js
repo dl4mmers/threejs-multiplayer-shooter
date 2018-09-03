@@ -162,7 +162,7 @@ Client.socket.on('allplayers',function(data)
 	else 
 	{
 		// set camera and id
-		Game.camera.position.set(0, 0, 0);
+		Game.camera.position.set(0, 2, 0);
 	    Game.self = data.selfId;
 	    Game.team = data.team;
 
@@ -201,6 +201,7 @@ Client.socket.on('allplayers',function(data)
 
 
 // Socket Event => Clean Players
+/*
 Client.socket.on('deleteallplayers', function() {
 
 	// clear scene
@@ -210,7 +211,7 @@ Client.socket.on('deleteallplayers', function() {
 	delete Game.controls;
 	Game.controls = new PointerLockControls( Game.camera, Game.sphereBody );
 	Game.scene.add( Game.controls.getObject() );
-	Game.camera.position.set(0, 0, 0);
+	Game.camera.position.set(0, 2, 0);
 	//Game.controls.getObject().position.set(0, 0, 0);
 
 	// recreate level
@@ -225,7 +226,7 @@ Client.socket.on('deleteallplayers', function() {
 	Game.cannonDebugRenderer = new THREE.CannonDebugRenderer( Game.scene, Game.world );
 
 	Game.animate();
-});
+});*/
 
 // Socket Events
 //---------------------------------------------------
@@ -256,6 +257,14 @@ Client.setScore = function(score)
 	Client.socket.emit('score', score);
 }
 
+// Set team score
+Client.setLoadingProgress = function(progress)
+{
+	$("#loading-progress").attr("style", "width: " + progress + "%");
+	$("#loading-progress").attr("aria-valuenow", progress);
+	$("#loading-progress").text("Loading: " + progress + "%");
+}
+
 // Controls
 //---------------------------------------------------
 
@@ -280,7 +289,7 @@ function createPointerLockControls() {
 	    class: 'd-flex align-items-center flex-column justify-content-center h-100'
 	}).insertBefore('canvas');
 
-	jQuery('<img src="../img/crosshair.png" class="align-middle">', {
+	jQuery('<img src="../img/crosshair_w.png" class="align-middle">', {
 	}).appendTo('#crosshair-overlay');
 	// ---------------------------------->
 
