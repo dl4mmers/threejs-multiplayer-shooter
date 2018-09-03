@@ -9,7 +9,7 @@
 //	- Bei Kill => Respawn
 //	- Team-Punkte
 //
-
+//Coment
 Game = {};
 
 // Cannon
