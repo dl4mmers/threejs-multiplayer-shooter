@@ -260,9 +260,11 @@ Client.setScore = function(score)
 // Set team score
 Client.setLoadingProgress = function(progress)
 {
-	$("#loading-progress").attr("style", "width: " + progress + "%");
-	$("#loading-progress").attr("aria-valuenow", progress);
-	$("#loading-progress").text("Loading: " + progress + "%");
+	var p = Math.round(progress);
+
+	$("#loading-progress").attr("style", "width: " + p + "%");
+	$("#loading-progress").attr("aria-valuenow", p);
+	$("#loading-progress").text("Loading: " + p + "%");
 }
 
 // Controls

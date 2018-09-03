@@ -84,8 +84,9 @@ Game.initThree = function()
 	Game.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 	// Spectate position
-	Game.camera.position.y = 10;
-	Game.camera.position.z = 20;
+	Game.camera.position.x = -21;
+	Game.camera.position.y = 18;
+	Game.camera.position.z = 142;
 
 	// Scene
 	Game.scene = new THREE.Scene();
@@ -165,6 +166,7 @@ Game.animate = function ()
 	{
 		Game.updatePosAndRot();
 		Game.controls.update( delta );
+		console.log(Game.sphereBody.position);
 	}
 
 	// Update Bone&Line Animations
