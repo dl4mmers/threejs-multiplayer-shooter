@@ -204,7 +204,9 @@ Client.socket.on('deleteallplayers', function() {
 	Game.createFloor();
 	Game.createLight();
 	//Game.createBoxes();
-	Game.createLevel();
+	//Game.createLevel();
+	Game.createCollisionLevel();
+	console.log("did it");
 
 	delete Game.cannonDebugRenderer;
 	Game.cannonDebugRenderer = new THREE.CannonDebugRenderer( Game.scene, Game.world );
