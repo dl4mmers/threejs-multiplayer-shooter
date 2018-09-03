@@ -102,7 +102,6 @@ $(document).keydown(function(ep) {
 		    	{
 		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
 		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
-		    		
 		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
 		    	}else{
 

@@ -349,7 +349,7 @@ Game.addSelf = function()
 	{
 		if(e.body.name == "Bullet" && e.body.team != Game.team)
 		{	
-			Game.health -= 5;
+			Game.health -= 100;
 
 			// if player is dead respawn him 
 			// idea: create random respawn points based on level layout and team gameplay

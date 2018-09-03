@@ -113,10 +113,14 @@ io.on('connection', function(socket)
 	{
 		// add id
 		if(score.death == "red")
+		{
+			socket.player.death++;
 			server.scoreBlue++;
-		else if(score.death == "blue")
+		}
+		else if(score.death == "blue"){
+			socket.player.death++;
 			server.scoreRed++;
-
+		}
 		var data = { red: server.scoreRed, blue: server.scoreBlue };
 		// broadcast movement
 		io.emit('score', data);
