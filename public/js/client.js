@@ -75,17 +75,26 @@ setInterval( function() {
 $(document).keydown(function(e) {
 
 	// Enter pressed => show chat window   
-	if(e.which == 13 && !$("#m").val() && Game.self != undefined) 
+	if(e.which == 13 && Game.self != undefined && $("#chat-form").css('display') == 'none' ) 
 	{
 		e.preventDefault();
 
 		// remove key eventlisteners
 		Game.controls.removeListeners();
 
-		$("#chat-form").toggle();
+		$("#chat-form").show();
 		$("#m").focus();
 		$("#messages").fadeIn();
 
+	} 
+	else if(e.which == 13 && !$('#m').val() && Game.self != undefined && $("#chat-form").css('display') != 'none')
+	{
+		e.preventDefault();
+
+		// readd key eventlisteners
+		Game.controls.readdListeners();
+
+		$("#chat-form").hide();
 	}
 
 });

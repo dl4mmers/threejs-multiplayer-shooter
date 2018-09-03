@@ -4,10 +4,7 @@
 
 //
 //	TODO:
-//	- Treffer auswerten
-//	- Leben adden
-//	- Bei Kill => Respawn
-//	- Team-Punkte
+// 	- Character Animation
 //
 
 Game = {};
@@ -153,20 +150,20 @@ Game.animate = function ()
     // Update Players
 	Game.playerMap.forEach( function(value, key) 
 	{
-	  value.mesh.position.copy(value.body.position);
-	  value.mesh.quaternion.copy(value.body.quaternion);
+		value.mesh.position.set(value.body.position.x, value.body.position.y - 1.4, value.body.position.z)
+
 	}, Game.playerMap);
 
 	
 	// update Debug Renderer
-	//Game.cannonDebugRenderer.update();
+	Game.cannonDebugRenderer.update();
 
 	// update controls and self position ONLY if not in spectate mode
 	if(Game.self !== "spectate" && Game.self !== undefined)
 	{
+
 		Game.updatePosAndRot();
 		Game.controls.update( delta );
-		console.log(Game.sphereBody.position);
 	}
 
 	// Update Bone&Line Animations
@@ -323,10 +320,9 @@ Game.getShootDir = function (targetVec)
 //
 Game.addSelf = function() 
 {
-	// Create a sphere
-    var mass = 5, radius = 1.3;
-    Game.sphereShape = new CANNON.Sphere(radius);
-    Game.sphereBody = new CANNON.Body({ mass: mass });
+	// Create a Cylinder
+    Game.sphereShape = new CANNON.Sphere(1.3);
+    Game.sphereBody = new CANNON.Body({ mass: 5 });
     Game.sphereBody.addShape(Game.sphereShape);
     Game.sphereBody.position.set(0,5,0);
     Game.sphereBody.linearDamping = 0.9;
@@ -448,9 +444,12 @@ Game.updatePosAndRot = function()
 {
 	// get position
 	var data = {
-		position: new THREE.Vector3()
+		position: new THREE.Vector3(),
+		rotation : new THREE.Euler()
 	};
 	data.position.copy(Game.sphereBody.position);
+	var cObj = Game.controls.getObject();
+	data.rotation.copy(cObj.rotation);
 
 	// push on socket
 	Client.move(data);
@@ -460,83 +459,75 @@ Game.updatePosAndRot = function()
 Game.addPlayer = function(player) 
 {
 
-	console.log("AddPlayer");
-	console.log(player);
+	// load character
+	var playerMixers = [];
+	var playerObject = new THREE.Object3D();
 
-	// Add Sphere
-	var ballShape = new CANNON.Sphere(1.0);
-	var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
-	var material;
+	var charString;
+	if(player.team == "red")
+		charString = "../models/characterRed.jd";
+	else if(player.team == "blue")
+		charString = "../models/characterBlue.jd";
 
-
-
-
-		var loader = new THREE.JDLoader();
-	loader.load("../models/character.jd", 
+	// load character
+	var loader = new THREE.JDLoader();
+	loader.load(charString, 
     
 		// onLoad Callback
 	    function (data)
-	    {                            
+	    {        
 	        for (var i = 0; i < data.objects.length; ++i)
 	        {
 	            if (data.objects[i].type == "Mesh" || data.objects[i].type == "SkinnedMesh")
 	            {
-	            	var meshes=[];
+
 	                var mesh = null;
 	                var matArray = Game.createMaterials(data);
 	                if (data.objects[i].type == "SkinnedMesh")
 	                {
 	                    mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
 	                    mesh.frustumCulled = false;
-	                    console.log(mesh);
 	                }
 	                else // Mesh
 	                {
 	                    mesh = new THREE.Mesh(data.objects[i].geometry, matArray);
 	                }
-	                meshes.push(mesh);
-	                Game.scene.add(mesh);
+
+	                // add mesh to object3d
+	                playerObject.add(mesh);
 
 	                //Now we need THREE.AnimationMixer to play the animation.
 	                if (mesh && mesh.geometry.animations)
 	                {
 	                    var mixer = new THREE.AnimationMixer(mesh);
+
+	                    // add mixer
+	                    playerMixers.push(mixer);
 	                    Game.mixers.push(mixer);
-	                    var action = mixer.clipAction( mesh.geometry.animations[0] );
-	                    action.play();
+
+	                    //var action = mixer.clipAction( mesh.geometry.animations[0] );
+	                    //action.play();
 	                }
 	            }
 	        }        
 	    }
     );
 
-
-
-
-
-
-
-
-	if(player.team == "red")
-		material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-	else if(player.team == "blue")
-		material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
-
-    // create cannon body
-    var ballBody = new CANNON.Body( { mass: 0 } );
-    ballBody.addShape(ballShape);
-    var ballMesh = new THREE.Mesh( ballGeometry, material );
-    ballMesh.name = player.id;
+    // create cannon sphere
+    var charShape = new CANNON.Sphere(1.3);
+    var charBody  = new CANNON.Body( { mass: 0 } );
+    charBody.addShape(charShape);
 
     // set position
-    ballBody.position.set(0, 0, 0);
-    ballMesh.position.set(0, 0, 0);
+    charBody.position.set(0, 0, 0);
+    playerObject.position.set(0,0,0);
 
     // create player object
     var playerObj = 
     {
-    	body: ballBody,
-    	mesh: ballMesh,
+    	body: charBody,
+    	mesh: playerObject,
+    	mixers: playerMixers,
     	name: player.id
     };
 
@@ -551,17 +542,11 @@ Game.addPlayer = function(player)
 Game.removePlayer = function(id) 
 {
 
-	// Get Three Object
-	var obj = Game.scene.getObjectByName(id);
-
 	// Get Cannon Object
 	var player = Game.playerMap.get(id);
 
 	// Remove it from scene
-    Game.scene.remove( obj );
-    obj.geometry.dispose();
-    obj.material.dispose();
-    obj = undefined;
+    Game.scene.remove( player.mesh );
 
     // Remove it from Cannon world
     Game.world.remove(player.body);
@@ -576,10 +561,15 @@ Game.removePlayer = function(id)
 
 Game.movePlayer = function(MoveData) 
 {
+
 	var player = Game.playerMap.get(MoveData.id);
 	
 	if(player !== undefined)
+	{
 		player.body.position.copy(MoveData.position);
+		player.mesh.rotation.copy(MoveData.rotation);
+		player.mesh.rotation.y -= 1.57079632679; // subs pi/2
+	}
 }
 
 
