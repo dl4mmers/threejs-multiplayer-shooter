@@ -83,10 +83,12 @@ $("#chat-form").submit(function(){
 	return false;
 });
 
-/*$(document).keydown(function(ep) {
+$(document).keydown(function(ep) {
 	// Enter pressed => show chat window   
-	if(ep.which == 81 && Game.self != undefined && keyDown != true ) 
+	if(ep.which == 81 && Game.self != undefined && keyDown == false ) 
 	{
+		Client.socket.emit('getAllPlayer');
+		keyDown = true;
 		ep.preventDefault();
 
 		// remove key eventlisteners
@@ -98,20 +100,20 @@ $("#chat-form").submit(function(){
 		    {
 		    	if(allplayers.allPlayers[i].team == "blue")
 		    	{
-		    		$('#dataBlue').append($('<div id="static" style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
-		    		$('#dataBlue').append($('<div id="static" style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
-		    		$('#dataBlue').append($('<div id="static" style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
+		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
+		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+		    		
+		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
 		    	}else{
 
 		    		$('#dataRed').append($('<div id="static" style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
-		    		$('#dataRed').append($('<div id="static" style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
-		    		$('#dataRed').append($('<div id="static" style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
+		    		$('#dataRed').append($('<div style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+		    		$('#dataRed').append($('<div style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
 		    	}
 
 		 	}
 		$("#nameblue").fadeIn();
 		$("#namered").fadeIn();
-		keyDown = true;
 
 	}
 	$(document).keyup(function(ep) {
@@ -120,10 +122,10 @@ $("#chat-form").submit(function(){
 			$('#statistik').addClass('hide');
 			$('#dataBlue').empty();
 			$('#dataRed').empty();
-			keyDown =false;
+			keyDown = false;
 		}
 	});
-});*/
+});
 
 
 // Statistik Input
@@ -167,10 +169,11 @@ Client.socket.on('chat message', function(msg){
   elem.scrollTop = elem.scrollHeight;
 });
 
-/*Client.socket.on('getAllPlayer', function(allPlayer)
+Client.socket.on('getAllPlayer', function(allPlayer)
 {
 	allplayers = allPlayer;
-});*/
+
+});
 
 // Socket Event => New Player
 Client.socket.on('new user', function(player) 

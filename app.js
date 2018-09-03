@@ -75,11 +75,13 @@ io.on('connection', function(socket)
 		socket.player.kill = 0;
 		socket.player.death = 0;
 
-		//socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
+		socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
 		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
 		socket.broadcast.emit('new user', socket.player);
 		socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
 	});
+
+	
 
 	// movement
 	//----------------------------------------------------------------------------------------
@@ -120,11 +122,16 @@ io.on('connection', function(socket)
 		io.emit('score', data);
 	});
 
+	socket.on('getAllPlayer', function()
+	{
+		socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
+	});
 
 	// chat
 	//----------------------------------------------------------------------------------------
 	socket.on('chat message', function(msg)
 	{
+		console.log("bin hier");
 		io.emit('chat message', msg);
 	});
 

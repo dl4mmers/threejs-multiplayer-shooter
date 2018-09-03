@@ -9,7 +9,7 @@
 //	- Bei Kill => Respawn
 //	- Team-Punkte
 //
-//Coment
+
 Game = {};
 
 // Cannon
@@ -358,7 +358,6 @@ Game.addSelf = function()
 				// player gets killed => opponent team score += 1
 				var data = { death: Game.team };
 				Client.setScore(data);
-				//Client.setKill()
 
 				// respawn
 				Game.health = 100;
@@ -441,8 +440,6 @@ Game.addSelf = function()
 	        Client.shoot(data);
 
 	    }
-	    //mySound.pause();
-		//mySound.currentTime = 0;
 	});
 }
 
@@ -466,7 +463,7 @@ Game.updatePosAndRot = function()
 }
 
 
-Game.addk= function(player) 
+Game.addPlayer = function(player) 
 {
 
 	console.log("AddPlayer");
