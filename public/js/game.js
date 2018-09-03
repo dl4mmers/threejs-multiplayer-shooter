@@ -358,6 +358,7 @@ Game.addSelf = function()
 				// player gets killed => opponent team score += 1
 				var data = { death: Game.team };
 				Client.setScore(data);
+				//Client.setKill()
 
 				// respawn
 				Game.health = 100;
@@ -465,7 +466,7 @@ Game.updatePosAndRot = function()
 }
 
 
-Game.addPlayer = function(player) 
+Game.addk= function(player) 
 {
 
 	console.log("AddPlayer");

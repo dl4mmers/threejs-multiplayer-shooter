@@ -8,10 +8,13 @@ Client.socket = io();
 $("#chat-form").hide();
 $("#warning").hide();
 $("#username").focus();
-$("#statistik-form").hide();
+$("#statistik").hide();
+$('#statistik').addClass('hide');
 var username;
 var mySound;
 var letsgo;
+var allplayers;
+var keyDown = false;
 mySound = new Audio('audio/Battle.mp3');
 //mySound.play();
 // Forms
@@ -80,24 +83,48 @@ $("#chat-form").submit(function(){
 	return false;
 });
 
-// Chat Input
-$(document).keydown(function(ep) {
-
+/*$(document).keydown(function(ep) {
 	// Enter pressed => show chat window   
-	if(ep.which == 9 && Game.self != undefined) 
+	if(ep.which == 81 && Game.self != undefined && keyDown != true ) 
 	{
 		ep.preventDefault();
 
 		// remove key eventlisteners
 		Game.controls.removeListeners();
 
-		$("#statistik-form").toggle();
+		$("#statistik").toggle();
+		$('#statistik').removeClass('hide');
+		for(var i = 0; i < allplayers.allPlayers.length; i++) 
+		    {
+		    	if(allplayers.allPlayers[i].team == "blue")
+		    	{
+		    		$('#dataBlue').append($('<div id="static" style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
+		    		$('#dataBlue').append($('<div id="static" style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+		    		$('#dataBlue').append($('<div id="static" style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
+		    	}else{
+
+		    		$('#dataRed').append($('<div id="static" style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
+		    		$('#dataRed').append($('<div id="static" style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+		    		$('#dataRed').append($('<div id="static" style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
+		    	}
+
+		 	}
 		$("#nameblue").fadeIn();
 		$("#namered").fadeIn();
+		keyDown = true;
 
 	}
+	$(document).keyup(function(ep) {
+		if(keyDown == true)
+		{
+			$('#statistik').addClass('hide');
+			$('#dataBlue').empty();
+			$('#dataRed').empty();
+			keyDown =false;
+		}
+	});
+});*/
 
-});
 
 // Statistik Input
 $(document).keydown(function(e) {
@@ -115,6 +142,7 @@ $(document).keydown(function(e) {
 		$("#messages").fadeIn();
 
 	}
+
 
 });
 
@@ -139,6 +167,10 @@ Client.socket.on('chat message', function(msg){
   elem.scrollTop = elem.scrollHeight;
 });
 
+/*Client.socket.on('getAllPlayer', function(allPlayer)
+{
+	allplayers = allPlayer;
+});*/
 
 // Socket Event => New Player
 Client.socket.on('new user', function(player) 
@@ -164,6 +196,12 @@ Client.socket.on('score', function(score)
 	$("#score-red").text(score.red);
 	$("#score-blue").text(score.blue);
 });
+
+// Socket Event => Set score
+/*Client.socket.on('deathScore', function(deathScore) 
+{
+	
+});*/
 
 // Socket Event => Player disconnected
 Client.socket.on('remove', function(id)
@@ -289,6 +327,18 @@ Client.setHealth = function(health)
 Client.setScore = function(score)
 {
 	Client.socket.emit('score', score);
+}
+
+// Set team score
+Client.setKill = function(kill)
+{
+	Client.socket.emit('kill', kill);
+}
+
+// Set team score
+Client.setDeath = function(death)
+{
+	Client.socket.emit('death', death);
 }
 
 // Controls

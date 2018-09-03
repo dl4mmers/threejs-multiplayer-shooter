@@ -52,20 +52,42 @@
     </div>
 
     <!-- score -->
-    <div class="statistik-window" style="padding: 25px 25px 65px 25px">
-      <ul id="statistik" class="list-unstyled" style="overflow-y: auto; height: 40%"></ul>
-      <form id="statistik-form" action="" style="margin-top: auto;">
-        <div class="form-group row">
-          <div class="col-sm-10" style="padding: 0px 0px 0px 40px; float: left">
-            <p style="color: #0099cc; margin: 10px 0px 0px 0px; float: left">Team Blue</p>
-            <p style="color: #dc3545; margin: 10px 0px 0px 0px; margin-left: 300px">Team Red</p>
+    <div  id="statistik" class="statistik-window d-flex align-items-center flex-column justify-content-center h-100" style="width: 100%; height: 100%">
+
+      <div style="width: 60%; height: 60%; padding: 25px; background-color: rgba(0,0,0,0.4);">
+
+          <div class="row">
+
+            <!-- Team Blue Column -->
+            <div class="col-md-6">
+              <h3 class="text-center" style="color: #0099cc; padding-bottom: 20px">Team Blue</h3>
+
+              <!-- Data Blue [0] -->
+              <div class="row">
+                <div class="col-md-4">Name</div>
+                <div class="col-md-4">Kill</div>
+                <div class="col-md-4">Death</div>
+              </div>
+              <div id="dataBlue" class="row"></div>
+            </div>
+
+            <!-- Team Red Column -->
+            <div class="col-md-6">
+              <h3 class="text-center" style="color: #dc3545; padding-bottom: 20px">Team Red</h3>
+
+              <!-- Data Red [0] -->
+              <div class="row">
+                <div class="col-md-4">Name</div>
+                <div class="col-md-4">Kill</div>
+                <div class="col-md-4">Death</div>
+              </div>
+              <div id="dataRed" class="row"></div>
+
+            </div>
+
           </div>
-           <div class="col-sm-10" style="padding: 0px 0px 0px 40px; float: left">
-            <p id="nameblue" style="color: #0099cc; margin: 10px 0px 0px 0px; float: left"></p>
-            <p id="namered" style="color: #dc3545; margin: 10px 0px 0px 0px; margin-left: 300px"></p>
-          </div>
-        </div>
-      </form>
+
+      </div>
     </div>
 
   <!-- Dependencies-->
@@ -81,7 +103,7 @@
 
 
   <!-- Game and Client -->
-  <script src="js/game.js"></script>
   <script src="js/client.js"></script>
+  <script src="js/game.js"></script>
   </body>
 </html>

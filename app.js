@@ -29,6 +29,8 @@ server.teamBlue = 0;
 // team score
 server.scoreRed = 0;
 server.scoreBlue = 0;
+var kill = 0;
+var death = 0;
 
 // Open port
 server.listen(3000, 'localhost' ,function(){
@@ -46,7 +48,6 @@ io.on('connection', function(socket)
 		username: "spectator"
 	};
 	socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: "spectate" } );
-
 
 	// new player
 	//----------------------------------------------------------------------------------------
@@ -71,13 +72,14 @@ io.on('connection', function(socket)
 			socket.player.team = "red";
 			server.teamRed++;
 		}
+		socket.player.kill = 0;
+		socket.player.death = 0;
 
-		//socket.emit('statistik');
+		//socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
 		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
 		socket.broadcast.emit('new user', socket.player);
 		socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
 	});
-
 
 	// movement
 	//----------------------------------------------------------------------------------------
