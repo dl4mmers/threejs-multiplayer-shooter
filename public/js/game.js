@@ -129,9 +129,6 @@ Game.animate = function ()
 	var time = performance.now();
 	var delta = ( time - Game.prevTime ) / 1000;
 
-
-
-
 	// Cannon Simulation Loop
 	Game.world.step(1.0 / 120.0);	// Step twice with smaller value to ensure correct collision detection
 	Game.world.step(1.0 / 120.0);	// Its the same as calling step(1.0 / 60.0) one time
@@ -452,11 +449,10 @@ Game.addSelf = function()
 
 
 
-     // Create EventListener for Collision Detection
+    // Create EventListener for Collision Detection
     // When a body collides with another body, they both dispatch the "collide" event.
 	Game.sphereBody2.addEventListener("collide",function(e)
 	{
-		console.log("col");
 		if(e.body.name == "Bullet" && e.body.team != Game.team)
 		{	
 			Game.health -= 30;

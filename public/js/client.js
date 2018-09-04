@@ -17,7 +17,6 @@ var allplayers;
 var keyDown = false;
 mySound = new Audio('audio/Battle.mp3');
 mySound.play();
-// test
 var myAudio;
 // Forms
 //---------------------------------------------------
@@ -55,6 +54,9 @@ $("#username-form").submit(function() {
   	// ask for new Player
     username = input;
     Client.socket.emit('new user', input);
+
+    // get score
+    Client.socket.emit('score', { death: undefined, player: undefined });
 
     // edit gui
     $('#username').val('');
@@ -96,34 +98,18 @@ $("#chat-form").submit(function(){
 	return false;
 });
 
-$(document).keydown(function(ep) {
+$(document).keydown(function(ep) 
+{
 	// Enter pressed => show chat window   
 	if(ep.which == 81 && Game.self != undefined && keyDown == false ) 
 	{
-		Client.socket.emit('getAllPlayer');
+		
 		keyDown = true;
 		ep.preventDefault();
 
 		$("#statistik").toggle();
 		$('#statistik').removeClass('hide');
-		for(var i = 0; i < allplayers.allPlayers.length; i++) 
-		    {
-		    	if(allplayers.allPlayers[i].team == "blue" && allplayers.allPlayers[i].username != "spectator")
-		    	{
-		    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].username));
-		    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].kill));
-		    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].death));
-		    	
-		    	}
-		    	else if(allplayers.allPlayers[i].team == "red" && allplayers.allPlayers[i].username != "spectator")
-		    	{
 
-		    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].username));
-		    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].kill));
-		    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].death));
-		    	}
-
-		 	}
 		$("#nameblue").fadeIn();
 		$("#namered").fadeIn();
 
@@ -133,8 +119,6 @@ $(document).keydown(function(ep) {
 		if(keyDown == true && ep.which == 81)
 		{
 			$('#statistik').addClass('hide');
-			$('#dataBlue').empty();
-			$('#dataRed').empty();
 			keyDown = false;
 
 		}
@@ -179,7 +163,7 @@ setInterval( function() {
 }, 20000);
 
 
-// Socket Listeners
+// Server => Client
 //---------------------------------------------------
 
 // Socket Event => Chat Message
@@ -199,7 +183,31 @@ Client.socket.on('sound', function(){
 
 Client.socket.on('getAllPlayer', function(allPlayer)
 {
+	// set statistics
 	allplayers = allPlayer;
+
+	// empty old statistics
+	$('#dataBlue').empty();
+	$('#dataRed').empty();
+
+	// append new statistics
+	for(var i = 0; i < allplayers.allPlayers.length; i++) 
+	{
+    	if(allplayers.allPlayers[i].team == "blue" && allplayers.allPlayers[i].username != "spectator")
+    	{
+    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].username));
+    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].death));
+    	
+    	}
+    	else if(allplayers.allPlayers[i].team == "red" && allplayers.allPlayers[i].username != "spectator")
+    	{
+
+    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].username));
+    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].death));
+    	}
+	}
 
 });
 
@@ -211,12 +219,14 @@ Client.socket.on('new user', function(player)
 
 
 // Socket Event => Move Player
-Client.socket.on('move', function(moveData) {
+Client.socket.on('move', function(moveData) 
+{
 	Game.movePlayer(moveData);
 });
 
 // Socket Event => Update Moving States
-Client.socket.on('movingstate', function(state) {
+Client.socket.on('movingstate', function(state) 
+{
 	Game.animatePlayer(state);
 });
 
@@ -229,15 +239,13 @@ Client.socket.on('shoot', function(shootData)
 // Socket Event => Set score
 Client.socket.on('score', function(score) 
 {
+	// update statitics table directly after score changed
+	Client.socket.emit('getAllPlayer');
+
 	$("#score-red").text(score.red);
 	$("#score-blue").text(score.blue);
 });
 
-// Socket Event => Set score
-/*Client.socket.on('deathScore', function(deathScore) 
-{
-	
-});*/
 
 // Socket Event => Player disconnected
 Client.socket.on('remove', function(id)
@@ -249,7 +257,6 @@ Client.socket.on('remove', function(id)
 // Socket Event => Get All Players
 Client.socket.on('allplayers',function(data) 
 {
-	//console.log(data);
 
 	// spectate
 	if( data.selfId === "spectate" )
@@ -267,7 +274,8 @@ Client.socket.on('allplayers',function(data)
 		    }
 		}
 
-	} 
+	}
+	// player 
 	else 
 	{
 		// set camera and id
@@ -308,36 +316,7 @@ Client.socket.on('allplayers',function(data)
 
 });
 
-
-// Socket Event => Clean Players
-/*
-Client.socket.on('deleteallplayers', function() {
-
-	// clear scene
-	Game.clearScene(Game.scene);
-
-	// clear controls
-	delete Game.controls;
-	Game.controls = new PointerLockControls( Game.camera, Game.sphereBody );
-	Game.scene.add( Game.controls.getObject() );
-	Game.camera.position.set(0, 2, 0);
-	//Game.controls.getObject().position.set(0, 0, 0);
-
-	// recreate level
-	Game.createFloor();
-	Game.createLight();
-	//Game.createBoxes();
-	//Game.createLevel();
-	Game.createCollisionLevel();
-	console.log("did it");
-
-	delete Game.cannonDebugRenderer;
-	Game.cannonDebugRenderer = new THREE.CannonDebugRenderer( Game.scene, Game.world );
-
-	Game.animate();
-});*/
-
-// Socket Events
+// Client => Server
 //---------------------------------------------------
 
 // Push movement data on socket
@@ -381,21 +360,6 @@ Client.setLoadingProgress = function(progress)
 	$("#loading-progress").attr("aria-valuenow", p);
 	$("#loading-progress").text("Loading: " + p + "%");
 }
-
-// Set Kill
-Client.setKill = function(kill)
-{
-	Client.socket.emit('kill', kill);
-}
-
-// Set Death
-Client.setDeath = function(death)
-{
-	Client.socket.emit('death', death);
-}
-
-// Controls
-//---------------------------------------------------
 
 //
 // creates pointerlock controls

@@ -1,30 +1,13 @@
 <!doctype html>
 <html>
   <head>
-    <title>ThreeJS Game</title>
+    <title>ThreeJS Tournament</title>
 
     <!-- Bootstrap 4 and other css -->
     <link href="https://fonts.googleapis.com/css?family=Russo+One" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="css/style.css">
   </head>
-
-    <style>
-  * {
-   margin: 0;
-   padding: 0;
-  }
-  .imgbox {
-   display: grid;
-   height: 100%;
-  }
-  .center-fit {
-   max-width: 100%;
-   max-height: 100vh;
-   margin: auto;
-  }
-  </style>
-
 
   <!-- Body -->
   <body>
@@ -36,30 +19,26 @@
       <div class="progress">
         <div id="loading-progress" class="progress-bar" role="progressbar" style="width: 25%; margin-bottom: auto;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Loading: 0%</div>
       </div>
-     <!--   <div class="imgbox">
-        <img class="center-fit" id="pic" src='models/eye.jpg'>
-      </div>-->
-
 
       <div class="container d-flex align-items-center flex-column justify-content-center h-100" style="">
-      <form id="username-form" action="" style="">
-        <h1 class="display-1">ThreeJS Game</h1>
-        <div class="form-group row">
-          <div class="col-md-1"></div>
-          <div class="col-md-6" style="padding: 0px 0px 0px 15px">
-            <input id="username" autocomplete="off" class="form-control form-control-lg" type="text" placeholder="Gib deinen Nickname ein">
+        <form id="username-form" action="" style="">
+          <h1 class="display-1">ThreeJS Tournament</h1>
+          <div class="form-group row">
+            <div class="col-md-1"></div>
+            <div class="col-md-6" style="padding: 0px 0px 0px 15px">
+              <input id="username" autocomplete="off" class="form-control form-control-lg" type="text" placeholder="Gib deinen Nickname ein">
+            </div>
+            <div class="col-md-4" style="padding: 0px 15px 0px 0px">
+              <button class="btn btn-primary btn-lg" style="width: 100%">Send</button>
+            </div>
+            <div class="col-md-1"></div>
           </div>
-          <div class="col-md-4" style="padding: 0px 15px 0px 0px">
-            <button class="btn btn-primary btn-lg" style="width: 100%">Send</button>
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6"><div id="warning" class="alert alert-danger" role="alert"></div></div>
+            <div class="col-md-3"></div>
           </div>
-          <div class="col-md-1"></div>
-        </div>
-        <div class="row">
-          <div class="col-md-3"></div>
-          <div class="col-md-6"><div id="warning" class="alert alert-danger" role="alert"></div></div>
-          <div class="col-md-3"></div>
-        </div>
-      </form>
+        </form>
       </div>
     </div>
 
@@ -78,31 +57,29 @@
       </form>
     </div>
 
-    <!-- score -->
+    <!-- Score -->
     <div  id="statistik" class="statistik-window d-flex align-items-center flex-column justify-content-center h-100" style="width: 100%; height: 100%">
-
       <div style="width: 60%; height: 60%; padding: 25px; background-color: rgba(0,0,0,0.4);">
 
           <div class="row">
 
             <!-- Team Blue Column -->
             <div class="col-md-6">
-              <h3 class="text-center" style="color: #0099cc; padding-bottom: 20px">Team Blue</h3>
 
-              <!-- Data Blue [0] -->
+              <h3 class="text-center" style="color: #0099cc; padding-bottom: 20px">Team Blue</h3>
               <div class="row">
                 <div class="col-md-4">Name</div>
                 <div class="col-md-4">Kill</div>
                 <div class="col-md-4">Death</div>
               </div>
               <div id="dataBlue" class="row"></div>
+
             </div>
 
             <!-- Team Red Column -->
             <div class="col-md-6">
-              <h3 class="text-center" style="color: #dc3545; padding-bottom: 20px">Team Red</h3>
 
-              <!-- Data Red [0] -->
+              <h3 class="text-center" style="color: #dc3545; padding-bottom: 20px">Team Red</h3>
               <div class="row">
                 <div class="col-md-4">Name</div>
                 <div class="col-md-4">Kill</div>
