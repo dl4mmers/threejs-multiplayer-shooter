@@ -119,7 +119,6 @@ io.on('connection', function(socket)
 
 
 	// score
-	//hdhdhd
 	//----------------------------------------------------------------------------------------
 	socket.on('score', function(score) 
 	{
@@ -134,11 +133,13 @@ io.on('connection', function(socket)
 			socket.player.death++;
 			server.scoreRed++;
 		}
-
 		// set kill
 		var player = getPlayerById(score.kill);
-		if(player != undefined)
+		if(player != undefined){
 			player.kill++;
+			socket.emit('sound');
+		}
+
 
 		var data = { red: server.scoreRed, blue: server.scoreBlue };
 		io.emit('score', data);

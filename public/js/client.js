@@ -16,7 +16,8 @@ var letsgo;
 var allplayers;
 var keyDown = false;
 mySound = new Audio('audio/Battle.mp3');
-//mySound.play();
+mySound.play();
+var myAudio;
 // Forms
 //---------------------------------------------------
 
@@ -41,6 +42,14 @@ $("#username-form").submit(function() {
     stopsound();
     letsgo = new Audio('audio/lets_go.mp3'); 
     letsgo.play();
+    myAudio = new Audio('audio/Off Limits.wav'); 
+    myAudio.volume = 0.2; 
+    myAudio.addEventListener('ended', function() {
+    	myAudio.volume = 0.2; 
+	    this.play();
+	}, false);
+	
+	myAudio.play();
 
   	// ask for new Player
     username = input;
@@ -57,6 +66,8 @@ $("#username-form").submit(function() {
   }
 
 });
+
+
 
 function playsound(scr){
 	mySound = new Audio(scr);
@@ -178,6 +189,11 @@ Client.socket.on('chat message', function(msg){
   // auto scroll bot
   var elem = document.getElementById('messages');
   elem.scrollTop = elem.scrollHeight;
+});
+
+Client.socket.on('sound', function(){
+	mySound = new Audio('audio/Haha.mp3');
+	mySound.play();
 });
 
 Client.socket.on('getAllPlayer', function(allPlayer)

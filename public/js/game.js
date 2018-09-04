@@ -27,7 +27,7 @@ Game.team = undefined;
 // Time
 Game.prevTime = performance.now();
 var mySound;
-
+var mySounds;
 //
 // Cannon Physics Initialization
 //
@@ -411,12 +411,15 @@ Game.addSelf = function()
 	{
 		if(e.body.name == "Bullet" && e.body.team != Game.team)
 		{	
-			Game.health -= 100;
-
+			Game.health -= 30;
+			mySounds = new Audio('audio/Uhh.mp3')
+			mySounds.play();
 			// if player is dead respawn him 
 			// idea: create random respawn points based on level layout and team gameplay
-			if(Game.health == 0)
+			if(Game.health < 0)
 			{
+				mySound = new Audio('audio/humiliation.mp3');
+				mySound.play();
 				// player gets killed => opponent team score += 1
 				var data = { death: Game.team, kill: e.body.playerId };
 				Client.setScore(data);
