@@ -140,8 +140,10 @@ Game.animate = function ()
 	if(!Game.finishedLoading)
 		Client.setLoadingProgress(Game.loadingLevel + Game.loadingCollision);
 
-	if( (Game.loadingLevel + Game.loadingCollision) == 100 && !Game.finishedLoading )
+	if( (Game.loadingLevel + Game.loadingCollision) == 100 && !Game.finishedLoading ){
 		Game.finishedLoading = true;
+		$('#pic').hide();
+	}
 
 	// update scene
 	Game.updateScene(delta);
