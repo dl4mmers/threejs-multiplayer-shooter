@@ -17,6 +17,7 @@ var allplayers;
 var keyDown = false;
 mySound = new Audio('audio/Battle.mp3');
 mySound.play();
+// test
 var myAudio;
 // Forms
 //---------------------------------------------------
