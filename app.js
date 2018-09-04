@@ -33,8 +33,8 @@ var kill = 0;
 var death = 0;
 
 // Open port
-server.listen(3000, 'localhost' ,function(){
-  console.log('listening on *:3000');
+server.listen(80, 'localhost' ,function(){
+  console.log('listening on *:80');
 });
 
 // Create Socket on Connection

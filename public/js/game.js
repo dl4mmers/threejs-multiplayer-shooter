@@ -28,6 +28,13 @@ Game.team = undefined;
 Game.prevTime = performance.now();
 var mySound;
 
+
+// Special Fun!
+Game.elevatorR=null;
+Game.elevatorL=null;
+Game.elevatorRCol=null;
+Game.elevatorLCol=null;
+
 //
 // Cannon Physics Initialization
 //
@@ -149,6 +156,17 @@ Game.animate = function ()
 Game.updateScene = function( delta )
 {
 
+	if(Game.elevatorR&&Game.elevatorRCol){
+		var a=Game.elevatorR.position.y;
+		a+=(Game.elevatorRCol.aabb.lowerBound.y);
+		Game.elevatorRCol.position.y=a;
+	}
+	if(Game.elevatorL&&Game.elevatorLCol){
+		var a=Game.elevatorL.position.y;
+		a+=(Game.elevatorLCol.aabb.lowerBound.y);
+		Game.elevatorLCol.position.y=a;
+	}
+
     // Update ball positions
     for(var i=0; i < balls.length; i++)
     {
@@ -248,6 +266,11 @@ Game.createLevel = function()
 	                //Now we need THREE.AnimationMixer to play the animation.
 	                if (mesh && mesh.geometry.animations)
 	                {
+	                	//get Elevators
+	                	if(mesh.geometry.name=="PlatformR")
+	                		Game.elevatorR=mesh;
+						if(mesh.geometry.name=="PlatformL")
+	                		Game.elevatorL=mesh;
 	                    var mixer = new THREE.AnimationMixer(mesh);
 	                    Game.mixers.push(mixer);
 	                    var action = mixer.clipAction( mesh.geometry.animations[0] );
@@ -857,8 +880,13 @@ function createPhysX(dae, dsMax, PhysiScaleFactor, world) {
         //boxBody.quaternion=quat;
        // boxBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
 
-        // add
-        
+       //get Elevator Collider 
+		if(sceneModel.children[i].name=="PlatformRCol")
+			Game.elevatorRCol=boxBody;
+		if(sceneModel.children[i].name=="PlatformLCol")
+			Game.elevatorLCol=boxBody;
+
+		// add
         world.add(boxBody);
 
    		}
