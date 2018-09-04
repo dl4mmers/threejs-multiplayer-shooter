@@ -156,7 +156,7 @@ Game.animate = function ()
 
 	
 	// update Debug Renderer
-	Game.cannonDebugRenderer.update();
+	//Game.cannonDebugRenderer.update();
 
 	// update controls and self position ONLY if not in spectate mode
 	if(Game.self !== "spectate" && Game.self !== undefined)
@@ -172,6 +172,51 @@ Game.animate = function ()
 	{
 	   	Game.mixers[i].update(delta); 
 	}
+
+if( Game.controls.enabled)
+	    {
+	    	// get player pos
+	        var x = Game.sphereBody.position.x;
+	        var y = Game.sphereBody.position.y;
+	        var z = Game.sphereBody.position.z;
+
+	        // create bullet
+	        var ballBody = new CANNON.Body( { mass: 1 } );
+	        ballBody.addShape(ballShape);
+	        var ballMesh = new THREE.Mesh( ballGeometry, Game.material );
+
+	        // add to world 
+	        Game.world.add(ballBody);
+	        Game.scene.add(ballMesh);
+
+	        // add to collection
+	        balls.push(ballBody);
+	        ballMeshes.push(ballMesh);
+
+	        // get direction and set velocity
+	        Game.getShootDir(shootDirection);
+
+	        ballBody.velocity.set(  shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo);
+
+	        // Move the ball outside the player sphere
+	        x += shootDirection.x * (Game.sphereShape.radius*1.02 + ballShape.radius);
+	        y += shootDirection.y * (Game.sphereShape.radius*1.02 + ballShape.radius);
+	        z += shootDirection.z * (Game.sphereShape.radius*1.02 + ballShape.radius);
+	        ballBody.position.set(x,y+2,z);
+	        ballMesh.position.set(x,y+2,z);
+
+	      	// push on socket and broadcast
+	        var data = 
+	        {
+	        	velocity: new THREE.Vector3(shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo),
+	        	position: new THREE.Vector3(x,y+2,z),
+	        	team: Game.team
+	        }
+	        Client.shoot(data);
+
+	    }
+
+
 	
 	// render
 	Game.renderer.render( Game.scene, Game.camera );
@@ -302,6 +347,27 @@ Game.createLight = function()
 	var plight = new THREE.PointLight( 0xA1FF00, 1, 100 );
 	plight.position.set( -20, 1, 80 );
 	Game.scene.add( plight );
+
+	//ENEMY BASE
+	var plight = new THREE.PointLight( 0xff9d00, 1, 100 );
+	plight.position.set( 187, 1.5, 185 );
+	Game.scene.add( plight );
+
+	//Enemy Hall
+	var plight = new THREE.PointLight( 0x00ff26, 1, 100 );
+	plight.position.set( 86, 1.5, 210 );
+	Game.scene.add( plight );
+
+	//STARS
+	//home
+	var plight = new THREE.PointLight( 0xffffff, 1, 100 );
+	plight.position.set( -24, 14, 54 );
+	Game.scene.add( plight );
+	//enemy
+	var plight = new THREE.PointLight( 0xffffff, 1, 100 );
+	plight.position.set( 133, 14, 208 );
+	Game.scene.add( plight );
+
 }
 
 
@@ -459,6 +525,8 @@ Game.updatePosAndRot = function()
 	var cObj = Game.controls.getObject();
 	data.rotation.copy(cObj.rotation);
 
+	//console.log(data.position);
+
 	// push on socket
 	Client.move(data);
 }
@@ -552,6 +620,8 @@ Game.addPlayer = function(player)
     var charShape = new CANNON.Sphere(1.3);
     var charBody  = new CANNON.Body( { mass: 0 } );
     charBody.addShape(charShape);
+
+    Game.b=charBody;
 
     // set position
     charBody.position.set(0, 0, 0);
