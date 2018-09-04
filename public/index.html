@@ -57,6 +57,45 @@
       </form>
     </div>
 
+    <!-- score -->
+    <div  id="statistik" class="statistik-window d-flex align-items-center flex-column justify-content-center h-100" style="width: 100%; height: 100%">
+
+      <div style="width: 60%; height: 60%; padding: 25px; background-color: rgba(0,0,0,0.4);">
+
+          <div class="row">
+
+            <!-- Team Blue Column -->
+            <div class="col-md-6">
+              <h3 class="text-center" style="color: #0099cc; padding-bottom: 20px">Team Blue</h3>
+
+              <!-- Data Blue [0] -->
+              <div class="row">
+                <div class="col-md-4">Name</div>
+                <div class="col-md-4">Kill</div>
+                <div class="col-md-4">Death</div>
+              </div>
+              <div id="dataBlue" class="row"></div>
+            </div>
+
+            <!-- Team Red Column -->
+            <div class="col-md-6">
+              <h3 class="text-center" style="color: #dc3545; padding-bottom: 20px">Team Red</h3>
+
+              <!-- Data Red [0] -->
+              <div class="row">
+                <div class="col-md-4">Name</div>
+                <div class="col-md-4">Kill</div>
+                <div class="col-md-4">Death</div>
+              </div>
+              <div id="dataRed" class="row"></div>
+
+            </div>
+
+          </div>
+
+      </div>
+    </div>
+
   <!-- Dependencies-->
   <script src="../socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>

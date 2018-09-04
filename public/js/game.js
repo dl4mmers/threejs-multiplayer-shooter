@@ -26,6 +26,7 @@ Game.team = undefined;
 
 // Time
 Game.prevTime = performance.now();
+var mySound;
 
 //
 // Cannon Physics Initialization
@@ -410,7 +411,7 @@ Game.addSelf = function()
 	{
 		if(e.body.name == "Bullet" && e.body.team != Game.team)
 		{	
-			Game.health -= 5;
+			Game.health -= 100;
 
 			// if player is dead respawn him 
 			// idea: create random respawn points based on level layout and team gameplay
@@ -460,6 +461,8 @@ Game.addSelf = function()
 
 	    if( Game.controls.enabled && e.which == 1)
 	    {
+	    	mySound = new Audio('audio/laser3.mp3');
+	    	mySound.play();
 	    	// get player pos
 	        var x = Game.sphereBody.position.x;
 	        var y = Game.sphereBody.position.y;

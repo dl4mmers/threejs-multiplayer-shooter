@@ -8,8 +8,15 @@ Client.socket = io();
 $("#chat-form").hide();
 $("#warning").hide();
 $("#username").focus();
+$("#statistik").hide();
+$('#statistik').addClass('hide');
 var username;
-
+var mySound;
+var letsgo;
+var allplayers;
+var keyDown = false;
+mySound = new Audio('audio/Battle.mp3');
+//mySound.play();
 // Forms
 //---------------------------------------------------
 
@@ -30,6 +37,10 @@ $("#username-form").submit(function() {
 
   } else {
 
+
+    stopsound();
+    letsgo = new Audio('audio/lets_go.mp3'); 
+    letsgo.play();
   	// ask for new Player
     username = input;
     Client.socket.emit('new user', input);
@@ -46,6 +57,15 @@ $("#username-form").submit(function() {
 
 });
 
+function playsound(scr){
+	mySound = new Audio(scr);
+	mySound.play();
+}
+
+function stopsound(){
+	mySound.pause();
+	mySound.currentTime = 0;
+}
 
 // Chat Form
 $("#chat-form").submit(function(){
@@ -63,15 +83,51 @@ $("#chat-form").submit(function(){
 	return false;
 });
 
-// Chat Fadeout
-setInterval( function() { 
-	if( $("#messages").css('display') != 'none' ) {
-		$("#messages").fadeOut( "slow" );
+$(document).keydown(function(ep) {
+	// Enter pressed => show chat window   
+	if(ep.which == 81 && Game.self != undefined && keyDown == false ) 
+	{
+		Client.socket.emit('getAllPlayer');
+		keyDown = true;
+		ep.preventDefault();
+
+		// remove key eventlisteners
+		Game.controls.removeListeners();
+
+		$("#statistik").toggle();
+		$('#statistik').removeClass('hide');
+		for(var i = 0; i < allplayers.allPlayers.length; i++) 
+		    {
+		    	if(allplayers.allPlayers[i].team == "blue")
+		    	{
+		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
+		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
+		    	}else{
+
+		    		$('#dataRed').append($('<div id="static" style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
+		    		$('#dataRed').append($('<div style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+		    		$('#dataRed').append($('<div style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
+		    	}
+
+		 	}
+		$("#nameblue").fadeIn();
+		$("#namered").fadeIn();
+
 	}
-}, 20000);
+	$(document).keyup(function(ep) {
+		if(keyDown == true)
+		{
+			$('#statistik').addClass('hide');
+			$('#dataBlue').empty();
+			$('#dataRed').empty();
+			keyDown = false;
+		}
+	});
+});
 
 
-// Chat Input
+// Statistik Input
 $(document).keydown(function(e) {
 
 	// Enter pressed => show chat window   
@@ -97,7 +153,15 @@ $(document).keydown(function(e) {
 		$("#chat-form").hide();
 	}
 
+
 });
+
+// Chat Fadeout
+setInterval( function() { 
+	if( $("#messages").css('display') != 'none' ) {
+		$("#messages").fadeOut( "slow" );
+	}
+}, 20000);
 
 
 // Socket Listeners
@@ -113,6 +177,11 @@ Client.socket.on('chat message', function(msg){
   elem.scrollTop = elem.scrollHeight;
 });
 
+Client.socket.on('getAllPlayer', function(allPlayer)
+{
+	allplayers = allPlayer;
+
+});
 
 // Socket Event => New Player
 Client.socket.on('new user', function(player) 
@@ -143,6 +212,12 @@ Client.socket.on('score', function(score)
 	$("#score-red").text(score.red);
 	$("#score-blue").text(score.blue);
 });
+
+// Socket Event => Set score
+/*Client.socket.on('deathScore', function(deathScore) 
+{
+	
+});*/
 
 // Socket Event => Player disconnected
 Client.socket.on('remove', function(id)
@@ -277,7 +352,7 @@ Client.setScore = function(score)
 	Client.socket.emit('score', score);
 }
 
-// Set team score
+// Set Loading Progress
 Client.setLoadingProgress = function(progress)
 {
 	var p = Math.round(progress);
@@ -285,6 +360,18 @@ Client.setLoadingProgress = function(progress)
 	$("#loading-progress").attr("style", "width: " + p + "%");
 	$("#loading-progress").attr("aria-valuenow", p);
 	$("#loading-progress").text("Loading: " + p + "%");
+}
+
+// Set Kill
+Client.setKill = function(kill)
+{
+	Client.socket.emit('kill', kill);
+}
+
+// Set Death
+Client.setDeath = function(death)
+{
+	Client.socket.emit('death', death);
 }
 
 // Controls

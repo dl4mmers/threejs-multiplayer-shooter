@@ -10,6 +10,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var THREE = require('three');
 
+
 // Static Resources Path
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -28,6 +29,8 @@ server.teamBlue = 0;
 // team score
 server.scoreRed = 0;
 server.scoreBlue = 0;
+var kill = 0;
+var death = 0;
 
 // Open port
 server.listen(3000, 'localhost' ,function(){
@@ -37,7 +40,6 @@ server.listen(3000, 'localhost' ,function(){
 // Create Socket on Connection
 io.on('connection', function(socket)
 {
-
 	// spectate
 	//----------------------------------------------------------------------------------------
 	socket.player = 
@@ -46,7 +48,6 @@ io.on('connection', function(socket)
 		username: "spectator"
 	};
 	socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: "spectate" } );
-
 
 	// new player
 	//----------------------------------------------------------------------------------------
@@ -71,12 +72,16 @@ io.on('connection', function(socket)
 			socket.player.team = "red";
 			server.teamRed++;
 		}
+		socket.player.kill = 0;
+		socket.player.death = 0;
 
+		socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
 		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
 		socket.broadcast.emit('new user', socket.player);
 		socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
 	});
 
+	
 
 	// movement
 	//----------------------------------------------------------------------------------------
@@ -119,20 +124,31 @@ io.on('connection', function(socket)
 	{
 		// add id
 		if(score.death == "red")
+		{
+			socket.player.death++;
 			server.scoreBlue++;
+		}
 		else if(score.death == "blue")
+		{
+			socket.player.death++;
 			server.scoreRed++;
-
+		}
+		
 		var data = { red: server.scoreRed, blue: server.scoreBlue };
 		// broadcast movement
 		io.emit('score', data);
 	});
 
+	socket.on('getAllPlayer', function()
+	{
+		socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
+	});
 
 	// chat
 	//----------------------------------------------------------------------------------------
 	socket.on('chat message', function(msg)
 	{
+		console.log("bin hier");
 		io.emit('chat message', msg);
 	});
 
@@ -156,6 +172,8 @@ io.on('connection', function(socket)
     });
 
 });
+
+
 
 function getAllPlayers(){
     var players = [];

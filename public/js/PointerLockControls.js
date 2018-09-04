@@ -2,6 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  * @author schteppe / https://github.com/schteppe
  */
+ var mySound;
  var PointerLockControls = function ( camera, cannonBody ) {
 
     var eyeYPos = 2; // eyes are 2 meters above the ground
@@ -89,6 +90,8 @@
 
             case 32: // space
                 if ( canJump === true ){
+                    mySound = new Audio('audio/phaserUp3.mp3');
+                    mySound.play();
                     velocity.y = jumpVelocity;
                 }
                 canJump = false;
@@ -128,6 +131,9 @@
         }
 
     };
+
+    mySound.pause();
+    mySound.currentTime = 0;
 
     document.addEventListener( 'mousemove', onMouseMove, false );
     document.addEventListener( 'keydown', onKeyDown, false );
