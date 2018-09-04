@@ -119,6 +119,7 @@ io.on('connection', function(socket)
 
 
 	// score
+	//hdhdhd
 	//----------------------------------------------------------------------------------------
 	socket.on('score', function(score) 
 	{
