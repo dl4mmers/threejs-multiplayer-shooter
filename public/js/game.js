@@ -8,6 +8,8 @@ Game = {};
 var physicsMaterial, balls=[], ballMeshes=[];
 Game.sphereShape;
 Game.sphereBody;
+Game.sphereShape2;
+Game.sphereBody2;
 
 // For Shoot
 var ballShape = new CANNON.Sphere(0.2);
@@ -127,6 +129,9 @@ Game.animate = function ()
 	var time = performance.now();
 	var delta = ( time - Game.prevTime ) / 1000;
 
+
+
+
 	// Cannon Simulation Loop
 	Game.world.step(1.0 / 120.0);	// Step twice with smaller value to ensure correct collision detection
 	Game.world.step(1.0 / 120.0);	// Its the same as calling step(1.0 / 60.0) one time
@@ -155,7 +160,7 @@ Game.animate = function ()
 
 Game.updateScene = function( delta )
 {
-
+	//Update Elevator Position Collider <=> Model
 	if(Game.elevatorR&&Game.elevatorRCol){
 		var a=Game.elevatorR.position.y;
 		a+=(Game.elevatorRCol.aabb.lowerBound.y);
@@ -165,6 +170,12 @@ Game.updateScene = function( delta )
 		var a=Game.elevatorL.position.y;
 		a+=(Game.elevatorLCol.aabb.lowerBound.y);
 		Game.elevatorLCol.position.y=a;
+	}
+
+	//Update Upper Player Collision Sphere
+	if(Game.sphereBody){
+		Game.sphereBody2.position.copy(Game.sphereBody.position);
+		Game.sphereBody2.position.y+=3;
 	}
 
     // Update ball positions
@@ -402,12 +413,20 @@ Game.getShootDir = function (targetVec)
 //
 Game.addSelf = function() 
 {
-	// Create a Cylinder
+	// Create a SnowMan
     Game.sphereShape = new CANNON.Sphere(1.3);
     Game.sphereBody = new CANNON.Body({ mass: 5 });
     Game.sphereBody.addShape(Game.sphereShape);
     Game.sphereBody.linearDamping = 0.9;
     Game.world.add(Game.sphereBody);
+    Game.sphereShape2 = new CANNON.Sphere(1.3);
+    Game.sphereBody2 = new CANNON.Body({ mass: 0 });
+    Game.sphereBody2.addShape(Game.sphereShape2);
+    //Game.sphereBody2.collisionResponse =0;
+    //Game.sphereBody2.DYNAMIC =0;
+    Game.world.add(Game.sphereBody2);
+
+
 
     // Create Health
     Game.health = 100;
@@ -420,11 +439,55 @@ Game.addSelf = function()
     if(Game.team == "red")
     {
     	Game.sphereBody.position.set(0,5,0);
+    	Game.sphereBody2.position.set(0,5+1.3,0);
     }
     else if(Game.team == "blue")
     {
     	Game.sphereBody.position.set(186,5,186);
+    	Game.sphereBody2.position.set(186,5+1.3,186);
     }
+
+
+
+
+     // Create EventListener for Collision Detection
+    // When a body collides with another body, they both dispatch the "collide" event.
+	Game.sphereBody2.addEventListener("collide",function(e)
+	{
+		console.log("col");
+		if(e.body.name == "Bullet" && e.body.team != Game.team)
+		{	
+			Game.health -= 30;
+			mySounds = new Audio('audio/Uhh.mp3')
+			mySounds.play();
+			// if player is dead respawn him 
+			// idea: create random respawn points based on level layout and team gameplay
+			if(Game.health < 0)
+			{
+				mySound = new Audio('audio/humiliation.mp3');
+				mySound.play();
+				// player gets killed => opponent team score += 1
+				var data = { death: Game.team, kill: e.body.playerId };
+				Client.setScore(data);
+
+				// respawn
+				Game.health = 100;
+
+				if(Game.team == "red")
+					Game.sphereBody2.position.set(0, 5+1.3, 0);
+				else if(Game.team == "blue")
+					Game.sphereBody2.position.set(186,5+1.3,186);
+
+			}
+			
+			Client.setHealth(Game.health);
+
+		}
+		//console.log("Collided with body:",e.body);
+		//console.log("Contact between bodies:",e.contact);
+	});
+
+
 
 
 
