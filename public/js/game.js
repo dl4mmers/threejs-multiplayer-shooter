@@ -418,7 +418,7 @@ Game.addSelf = function()
 			if(Game.health == 0)
 			{
 				// player gets killed => opponent team score += 1
-				var data = { death: Game.team };
+				var data = { death: Game.team, kill: e.body.playerId };
 				Client.setScore(data);
 
 				// respawn
@@ -703,6 +703,7 @@ Game.shootPlayer = function(ShootData)
         ballBody.addShape(ballShape);
         ballBody.name = "Bullet";
 	    ballBody.team = ShootData.team;
+	    ballBody.playerId = ShootData.id;
 
 	    // ball based on team color
 	    var ballMesh;

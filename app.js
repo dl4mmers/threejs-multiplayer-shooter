@@ -122,7 +122,7 @@ io.on('connection', function(socket)
 	//----------------------------------------------------------------------------------------
 	socket.on('score', function(score) 
 	{
-		// add id
+		// set parameters
 		if(score.death == "red")
 		{
 			socket.player.death++;
@@ -133,9 +133,13 @@ io.on('connection', function(socket)
 			socket.player.death++;
 			server.scoreRed++;
 		}
-		
+
+		// set kill
+		var player = getPlayerById(score.kill);
+		if(player != undefined)
+			player.kill++;
+
 		var data = { red: server.scoreRed, blue: server.scoreBlue };
-		// broadcast movement
 		io.emit('score', data);
 	});
 
@@ -175,7 +179,8 @@ io.on('connection', function(socket)
 
 
 
-function getAllPlayers(){
+function getAllPlayers()
+{
     var players = [];
     Object.keys(io.sockets.connected).forEach(function(socketID){
         var player = io.sockets.connected[socketID].player;
@@ -184,3 +189,17 @@ function getAllPlayers(){
     return players;
 }
 
+
+function getPlayerById( id )
+{
+	var player;
+
+	Object.keys(io.sockets.connected).forEach(function(socketID)
+	{
+        if(id == io.sockets.connected[socketID].player.id)
+        	player = io.sockets.connected[socketID].player;
+    });
+
+	if(player)
+		return player;
+}
