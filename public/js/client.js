@@ -16,6 +16,7 @@ var letsgo;
 var allplayers;
 var keyDown = false;
 mySound = new Audio('audio/Battle.mp3');
+// test
 //mySound.play();
 // Forms
 //---------------------------------------------------
