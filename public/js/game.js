@@ -2,15 +2,10 @@
 //	game.js
 //
 
-//
-//	TODO:
-// 	- Character Animation
-//
-
 Game = {};
 
 // Cannon
-var physicsMaterial, balls=[], ballMeshes=[], boxMeshes=[];
+var physicsMaterial, balls=[], ballMeshes=[];
 Game.sphereShape;
 Game.sphereBody;
 
@@ -105,19 +100,15 @@ Game.initThree = function()
 	// DebugRenderer
 	Game.cannonDebugRenderer = new THREE.CannonDebugRenderer( Game.scene, Game.world );
 
-	//
 	// Init Level
-	//-----------------------------------------------------------------------
-
 	Game.createLight();
 	Game.createLevel();
 	Game.createCollisionLevel();
 	Game.mixers=[];
-	
 };
 
 //
-// Update Function
+// Animate Function
 //
 
 Game.animate = function () 
@@ -129,10 +120,8 @@ Game.animate = function ()
 	var delta = ( time - Game.prevTime ) / 1000;
 
 	// Cannon Simulation Loop
-	// Step twice with smaller value to ensure correct collision detection
-	// Its the same as calling step(1.0 / 60.0) one time
-	Game.world.step(1.0 / 120.0);
-	Game.world.step(1.0 / 120.0);
+	Game.world.step(1.0 / 120.0);	// Step twice with smaller value to ensure correct collision detection
+	Game.world.step(1.0 / 120.0);	// Its the same as calling step(1.0 / 60.0) one time
 
 	// get loading progress
 	if(!Game.finishedLoading)
@@ -141,10 +130,66 @@ Game.animate = function ()
 	if( (Game.loadingLevel + Game.loadingCollision) == 100 && !Game.finishedLoading )
 		Game.finishedLoading = true;
 
+	// update scene
+	Game.updateScene(delta);
+
+	// update Debug Renderer
+	//Game.cannonDebugRenderer.update();
+
+	// render
+	Game.renderer.render( Game.scene, Game.camera );
+
+	// time
+	Game.prevTime = time;
+};
+
+
+
+Game.updateScene = function( delta )
+{
+
     // Update ball positions
-    for(var i=0; i< balls.length; i++){
-        ballMeshes[i].position.copy(balls[i].position);
-        ballMeshes[i].quaternion.copy(balls[i].quaternion);
+    for(var i=0; i < balls.length; i++)
+    {
+        
+    	// check distance from ball to players
+    	var minDist = 1000;
+    	var b = ballMeshes[i].position;
+		Game.playerMap.forEach( function(value, key) {
+			var a = new THREE.Vector3(value.body.position.x, value.body.position.y, value.body.position.z);
+			var d = a.distanceTo( b );
+			if ( d < minDist )
+				minDist = d;
+		}, Game.playerMap);
+
+		// check distance from ball to self
+		var selfV = new THREE.Vector3(Game.sphereBody.position.x, Game.sphereBody.position.y, Game.sphereBody.position.z);
+		var selfDist = selfV.distanceTo( b );
+		if( selfDist < minDist)
+			minDist = selfDist;
+
+		// check distance to nearest player and remove if dist > 100
+		if(minDist > 100)
+		{
+
+			// remove from scene / world
+			Game.world.remove(balls[i]);
+			Game.scene.remove(ballMeshes[i]);
+
+			// remove from arrays
+			var index1 = balls.indexOf(balls[i]);
+			var index2 = ballMeshes.indexOf(ballMeshes[i]);
+			if (index1 > -1) { balls.splice(index1, 1); }
+			if (index2 > -1) { ballMeshes.splice(index2, 1 ); }
+
+		} 
+		else 
+		{
+			// set position
+			ballMeshes[i].position.copy(balls[i].position);
+        	ballMeshes[i].quaternion.copy(balls[i].quaternion);
+		}
+
     }
 
     // Update Players
@@ -154,14 +199,9 @@ Game.animate = function ()
 
 	}, Game.playerMap);
 
-	
-	// update Debug Renderer
-	//Game.cannonDebugRenderer.update();
-
 	// update controls and self position ONLY if not in spectate mode
 	if(Game.self !== "spectate" && Game.self !== undefined)
 	{
-
 		Game.updatePosAndRot();
 		Game.updateMovingState();
 		Game.controls.update( delta );
@@ -173,60 +213,11 @@ Game.animate = function ()
 	   	Game.mixers[i].update(delta); 
 	}
 
-if( Game.controls.enabled)
-	    {
-	    	// get player pos
-	        var x = Game.sphereBody.position.x;
-	        var y = Game.sphereBody.position.y;
-	        var z = Game.sphereBody.position.z;
-
-	        // create bullet
-	        var ballBody = new CANNON.Body( { mass: 1 } );
-	        ballBody.addShape(ballShape);
-	        var ballMesh = new THREE.Mesh( ballGeometry, Game.material );
-
-	        // add to world 
-	        Game.world.add(ballBody);
-	        Game.scene.add(ballMesh);
-
-	        // add to collection
-	        balls.push(ballBody);
-	        ballMeshes.push(ballMesh);
-
-	        // get direction and set velocity
-	        Game.getShootDir(shootDirection);
-
-	        ballBody.velocity.set(  shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo);
-
-	        // Move the ball outside the player sphere
-	        x += shootDirection.x * (Game.sphereShape.radius*1.02 + ballShape.radius);
-	        y += shootDirection.y * (Game.sphereShape.radius*1.02 + ballShape.radius);
-	        z += shootDirection.z * (Game.sphereShape.radius*1.02 + ballShape.radius);
-	        ballBody.position.set(x,y+2,z);
-	        ballMesh.position.set(x,y+2,z);
-
-	      	// push on socket and broadcast
-	        var data = 
-	        {
-	        	velocity: new THREE.Vector3(shootDirection.x * shootVelo, shootDirection.y * shootVelo, shootDirection.z * shootVelo),
-	        	position: new THREE.Vector3(x,y+2,z),
-	        	team: Game.team
-	        }
-	        Client.shoot(data);
-
-	    }
+}
 
 
-	
-	// render
-	Game.renderer.render( Game.scene, Game.camera );
-
-	// time
-	Game.prevTime = time;
-};
-
-
-Game.createLevel = function(){
+Game.createLevel = function()
+{
 	var loader = new THREE.JDLoader();
 	loader.load("../models/model.jd", 
     
@@ -244,7 +235,7 @@ Game.createLevel = function(){
 	                {
 	                    mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
 	                    mesh.frustumCulled = false;
-	                    console.log(mesh);
+	                    //console.log(mesh);
 	                }
 	                else // Mesh
 	                {
@@ -391,18 +382,27 @@ Game.addSelf = function()
     Game.sphereShape = new CANNON.Sphere(1.3);
     Game.sphereBody = new CANNON.Body({ mass: 5 });
     Game.sphereBody.addShape(Game.sphereShape);
-    Game.sphereBody.position.set(0,5,0);
     Game.sphereBody.linearDamping = 0.9;
     Game.world.add(Game.sphereBody);
 
     // Create Health
     Game.health = 100;
 
+    // load materials
+    Game.redMaterial = new THREE.MeshPhongMaterial( { color:0xFFFFFF, map: THREE.ImageUtils.loadTexture( '../img/ballred.jpg') });
+    Game.blueMaterial = new THREE.MeshPhongMaterial( { color:0xFFFFFF, map: THREE.ImageUtils.loadTexture( '../img/ballblue2.jpg') });
+
     // Create Bullet material based on team color
     if(Game.team == "red")
-    	Game.material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+    {
+    	Game.sphereBody.position.set(0,5,0);
+    }
     else if(Game.team == "blue")
-    	Game.material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+    {
+    	Game.sphereBody.position.set(186,5,186);
+    }
+
+
 
     // Create EventListener for Collision Detection
     // When a body collides with another body, they both dispatch the "collide" event.
@@ -423,7 +423,10 @@ Game.addSelf = function()
 				// respawn
 				Game.health = 100;
 
-				Game.sphereBody.position.set(0, 2, 0);
+				if(Game.team == "red")
+					Game.sphereBody.position.set(0, 5, 0);
+				else if(Game.team == "blue")
+					Game.sphereBody.position.set(186,5,186);
 
 			}
 			
@@ -465,7 +468,11 @@ Game.addSelf = function()
 	        // create bullet
 	        var ballBody = new CANNON.Body( { mass: 1 } );
 	        ballBody.addShape(ballShape);
-	        var ballMesh = new THREE.Mesh( ballGeometry, Game.material );
+	        var ballMesh;
+	        if(Game.team == "red") 
+	        	ballMesh = new THREE.Mesh( ballGeometry, Game.redMaterial );
+	        else if(Game.team == "blue")
+	        	ballMesh = new THREE.Mesh( ballGeometry, Game.blueMaterial );
 
 	        // add to world 
 	        Game.world.add(ballBody);
@@ -651,16 +658,19 @@ Game.removePlayer = function(id)
 	// Get Cannon Object
 	var player = Game.playerMap.get(id);
 
-	// Remove it from scene
-    Game.scene.remove( player.mesh );
+	if( player != undefined )
+	{
+		// Remove it from scene
+	    Game.scene.remove( player.mesh );
 
-    // Remove it from Cannon world
-    Game.world.remove(player.body);
+	    // Remove it from Cannon world
+	    Game.world.remove( player.body );
 
-   	// Clear PlayerMap
-    Game.playerMap.delete(id);
+	   	// Clear PlayerMap
+	    Game.playerMap.delete(id);
 
-    Game.animate();
+	    Game.animate();
+	}
 
 }
 
@@ -691,14 +701,12 @@ Game.shootPlayer = function(ShootData)
         ballBody.name = "Bullet";
 	    ballBody.team = ShootData.team;
 
-	    // material based on team color
-	    var material;
+	    // ball based on team color
+	    var ballMesh;
 	    if(ShootData.team == "red")
-	    	material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+	    	ballMesh = new THREE.Mesh( ballGeometry, Game.redMaterial );
 	    else if(ShootData.team == "blue")
-	    	material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
-
-        var ballMesh = new THREE.Mesh( ballGeometry, material );
+	    	ballMesh = new THREE.Mesh( ballGeometry, Game.blueMaterial );
 
         // add to world 
         Game.world.add(ballBody);
@@ -728,7 +736,6 @@ Game.clearScene = function(obj)
 	if(obj.texture)  obj.texture.dispose();
 
 	ballMeshes.length = 0;
-	boxMeshes.length = 0;
 
 	// Clear Cannon World
     for(var i=0; i<balls.length; i++){
