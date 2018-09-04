@@ -16,7 +16,9 @@ var letsgo;
 var allplayers;
 var keyDown = false;
 mySound = new Audio('audio/Battle.mp3');
-//mySound.play();
+mySound.play();
+// test
+var myAudio;
 // Forms
 //---------------------------------------------------
 
@@ -41,6 +43,15 @@ $("#username-form").submit(function() {
     stopsound();
     letsgo = new Audio('audio/lets_go.mp3'); 
     letsgo.play();
+    myAudio = new Audio('audio/Off Limits.wav'); 
+    myAudio.volume = 0.2; 
+    myAudio.addEventListener('ended', function() {
+    	myAudio.volume = 0.2; 
+	    this.play();
+	}, false);
+	
+	myAudio.play();
+
   	// ask for new Player
     username = input;
     Client.socket.emit('new user', input);
@@ -56,6 +67,8 @@ $("#username-form").submit(function() {
   }
 
 });
+
+
 
 function playsound(scr){
 	mySound = new Audio(scr);
@@ -91,23 +104,23 @@ $(document).keydown(function(ep) {
 		keyDown = true;
 		ep.preventDefault();
 
-		// remove key eventlisteners
-		Game.controls.removeListeners();
-
 		$("#statistik").toggle();
 		$('#statistik').removeClass('hide');
 		for(var i = 0; i < allplayers.allPlayers.length; i++) 
 		    {
-		    	if(allplayers.allPlayers[i].team == "blue")
+		    	if(allplayers.allPlayers[i].team == "blue" && allplayers.allPlayers[i].username != "spectator")
 		    	{
-		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
-		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
-		    		$('#dataBlue').append($('<div style="color: #00324'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
-		    	}else{
+		    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].username));
+		    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+		    		$('#dataBlue').append($('<div style="color: #0099cc" class="col-md-4">').text(allplayers.allPlayers[i].death));
+		    	
+		    	}
+		    	else if(allplayers.allPlayers[i].team == "red" && allplayers.allPlayers[i].username != "spectator")
+		    	{
 
-		    		$('#dataRed').append($('<div id="static" style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].username));
-		    		$('#dataRed').append($('<div style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].kill));
-		    		$('#dataRed').append($('<div style="color: #00524'+i+'" class="col-md-4">').text(allplayers.allPlayers[i].death));
+		    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].username));
+		    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].kill));
+		    		$('#dataRed').append($('<div style="color: #dc3545" class="col-md-4">').text(allplayers.allPlayers[i].death));
 		    	}
 
 		 	}
@@ -115,13 +128,15 @@ $(document).keydown(function(ep) {
 		$("#namered").fadeIn();
 
 	}
+
 	$(document).keyup(function(ep) {
-		if(keyDown == true)
+		if(keyDown == true && ep.which == 81)
 		{
 			$('#statistik').addClass('hide');
 			$('#dataBlue').empty();
 			$('#dataRed').empty();
 			keyDown = false;
+
 		}
 	});
 });
@@ -175,6 +190,11 @@ Client.socket.on('chat message', function(msg){
   // auto scroll bot
   var elem = document.getElementById('messages');
   elem.scrollTop = elem.scrollHeight;
+});
+
+Client.socket.on('sound', function(){
+	mySound = new Audio('audio/Haha.mp3');
+	mySound.play();
 });
 
 Client.socket.on('getAllPlayer', function(allPlayer)
