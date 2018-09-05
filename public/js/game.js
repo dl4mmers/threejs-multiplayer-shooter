@@ -28,15 +28,15 @@ Game.team = undefined;
 
 // Time
 Game.prevTime = performance.now();
-var mySound;
-var mySounds;
 
 // Special Fun!
 Game.elevatorR=null;
 Game.elevatorL=null;
 Game.elevatorRCol=null;
 Game.elevatorLCol=null;
-
+var soundUhh = new Audio('audio/Uhh.mp3');
+var soundHumiliation = new Audio('audio/humiliation.mp3');
+var soundLaser = new Audio('audio/laser3.mp3');
 //
 // Cannon Physics Initialization
 //
@@ -260,6 +260,7 @@ Game.createLevel = function()
 	            	var meshes=[];
 	                var mesh = null;
 	                var matArray = Game.createMaterials(data);
+	                
 	                if (data.objects[i].type == "SkinnedMesh")
 	                {
 	                    mesh = new THREE.SkinnedMesh(data.objects[i].geometry, matArray);
@@ -456,14 +457,13 @@ Game.addSelf = function()
 		if(e.body.name == "Bullet" && e.body.team != Game.team)
 		{	
 			Game.health -= 30;
-			mySounds = new Audio('audio/Uhh.mp3')
-			mySounds.play();
+
+			soundHumiliation.play();
 			// if player is dead respawn him 
 			// idea: create random respawn points based on level layout and team gameplay
 			if(Game.health < 0)
 			{
-				mySound = new Audio('audio/humiliation.mp3');
-				mySound.play();
+				soundHumiliation.play();
 				// player gets killed => opponent team score += 1
 				var data = { death: Game.team, kill: e.body.playerId };
 				Client.setScore(data);
@@ -496,14 +496,12 @@ Game.addSelf = function()
 		if(e.body.name == "Bullet" && e.body.team != Game.team)
 		{	
 			Game.health -= 30;
-			mySounds = new Audio('audio/Uhh.mp3')
-			mySounds.play();
+			soundUhh.play();
 			// if player is dead respawn him 
 			// idea: create random respawn points based on level layout and team gameplay
 			if(Game.health < 0)
 			{
-				mySound = new Audio('audio/humiliation.mp3');
-				mySound.play();
+				soundHumiliation.play();
 				// player gets killed => opponent team score += 1
 				var data = { death: Game.team, kill: e.body.playerId };
 				Client.setScore(data);
@@ -548,8 +546,9 @@ Game.addSelf = function()
 
 	    if( Game.controls.enabled && e.which == 1)
 	    {
-	    	mySound = new Audio('audio/laser3.mp3');
-	    	mySound.play();
+	    	soundLaser.pause();
+    		soundLaser.currentTime = 0;
+	    	soundLaser.play();
 	    	// get player pos
 	        var x = Game.sphereBody.position.x;
 	        var y = Game.sphereBody.position.y;
@@ -592,11 +591,9 @@ Game.addSelf = function()
 	        	team: Game.team
 	        }
 	        Client.shoot(data);
-
 	    }
 	});
 }
-
 
 
 

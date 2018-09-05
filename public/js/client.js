@@ -12,13 +12,17 @@ $("#username").focus();
 $("#statistik").hide();
 $('#statistik').addClass('hide');
 
+//var browser = document.querySelector('iframe');
+//browser.setVolume(0.5);
+
 var username;
-var mySound;
-var letsgo;
 var allplayers;
 var keyDown = false;
-var mySS;
-var myAudio;
+
+//all Sounds
+var letsgo = new Audio('audio/lets_go.mp3'); 
+var soundOffLimit = new Audio('audio/Off Limits.wav'); 
+var	soundHaha = new Audio('audio/Haha.mp3');
 
 
 //var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
@@ -45,17 +49,15 @@ $("#username-form").submit(function() {
   } else {
 
   	$('#iframeAudio').remove();
-    stopsound();
-    letsgo = new Audio('audio/lets_go.mp3'); 
     letsgo.play();
-    mySS = new Audio('audio/Off Limits.wav'); 
-    mySS.volume = 0.03; 
-    mySS.addEventListener('ended', function() {
-    	mySS.volume = 0.03; 
+
+    soundOffLimit.volume = 0.03; 
+    soundOffLimit.addEventListener('ended', function() {
+    	soundOffLimit.volume = 0.03; 
 	    this.play();
 	}, false);
 	
-	mySS.play();
+	soundOffLimit.play();
 
   	// ask for new Player
     username = input;
@@ -75,18 +77,6 @@ $("#username-form").submit(function() {
   }
 
 });
-
-
-
-function playsound(scr){
-	mySound = new Audio(scr);
-	mySound.play();
-}
-
-function stopsound(){
-	mySound.pause();
-	mySound.currentTime = 0;
-}
 
 // Chat Form
 $("#chat-form").submit(function(){
@@ -186,8 +176,7 @@ Client.socket.on('chat message', function(msg){
 });
 
 Client.socket.on('sound', function(){
-	mySound = new Audio('audio/Haha.mp3');
-	mySound.play();
+	soundHaha.play();
 });
 
 Client.socket.on('getAllPlayer', function(allPlayer)
