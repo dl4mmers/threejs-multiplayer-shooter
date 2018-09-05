@@ -16,8 +16,9 @@ var letsgo;
 var allplayers;
 var keyDown = false;
 mySound = new Audio('audio/ut2004_level3.mp3');
-//mySound.volume = 0.03;
+mySound.volume = 0.03;
 mySound.autoplay = true;
+var mySS;
 var myAudio;
 
 
@@ -46,16 +47,17 @@ $("#username-form").submit(function() {
 
 
     stopsound();
+    mySound.autoplay = false;
     letsgo = new Audio('audio/lets_go.mp3'); 
     letsgo.play();
-    myAudio = new Audio('audio/Off Limits.wav'); 
-    myAudio.volume = 0.2; 
-    myAudio.addEventListener('ended', function() {
-    	myAudio.volume = 0.2; 
+    mySS = new Audio('audio/Off Limits.wav'); 
+    mySS.volume = 0.03; 
+    mySS.addEventListener('ended', function() {
+    	mySS.volume = 0.03; 
 	    this.play();
 	}, false);
 	
-	myAudio.play();
+	mySS.play();
 
   	// ask for new Player
     username = input;
