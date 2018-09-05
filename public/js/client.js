@@ -15,9 +15,15 @@ var mySound;
 var letsgo;
 var allplayers;
 var keyDown = false;
-mySound = new Audio('audio/Battle.mp3');
-mySound.play();
+mySound = new Audio('audio/ut2004_level3.mp3');
+//mySound.volume = 0.03;
+mySound.autoplay = true;
 var myAudio;
+
+
+var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+if(!isChrome){ $('#iframeAudio').remove() }
+
 // Forms
 //---------------------------------------------------
 
@@ -100,6 +106,9 @@ $("#chat-form").submit(function(){
 
 $(document).keydown(function(ep) 
 {
+
+
+
 	// Enter pressed => show chat window   
 	if(ep.which == 81 && Game.self != undefined && keyDown == false ) 
 	{

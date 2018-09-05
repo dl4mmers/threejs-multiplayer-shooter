@@ -94,6 +94,14 @@
       </div>
     </div>
 
+    <!-- Iframe for Chrome to enable autoplay sound -->
+    <iframe src="audio/ut2004_level3.mp3" allow="autoplay" style="display:none" id="iframeAudio">
+      <script></script>
+    </iframe>
+    <audio autoplay loop  id="playAudio">
+      <source src="audio/ut2004_level3.mp3">
+    </audio>
+
   <!-- Dependencies-->
   <script src="../socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
