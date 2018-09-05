@@ -6,15 +6,14 @@
 Client = {};
 Client.socket = io();
 
+// edit gui
 $("#chat-form").hide();
 $("#warning").hide();
 $("#username").focus();
-$("#statistik").hide();
 $('#statistik').addClass('hide');
+$('#register').addClass('hide');
 
-//var browser = document.querySelector('iframe');
-//browser.setVolume(0.5);
-
+// 
 var username;
 var allplayers;
 var keyDown = false;
@@ -31,22 +30,63 @@ var	soundHaha = new Audio('audio/Haha.mp3');
 // Forms
 //---------------------------------------------------
 
+$("#registrieren").click(function() 
+{
+	$("#login").addClass('hide');
+	$('#register').removeClass('hide');
+	$("#regwarn").hide();
+});
+
+$("#zurueck").click(function() {
+	$("#login").removeClass('hide');
+	$('#register').addClass('hide');
+});
+
+//Registerieren
+$("#register-form").submit(function() {
+
+  	var email	   	= $('#newemail').val();
+  	var username 	= $('#newusername').val();
+  	var password 	= $('#newepassword').val();
+	
+	if(email == "" || username == "" || password == "") 
+	{
+	    $("#regwarn").text("Email, Username und Password darf nicht leer sein!");
+	    $("#regwarn").show();
+	    return false;
+
+	} else if(username.length < 4 || username.length > 16 || password.length < 4) 
+	{
+	    $("#regwarn").text("Der Nickname und Password muss mindestens 4 zeichen enthalten");
+	    $("#regwarn").show();
+	    return false;
+
+	} else 
+	{
+
+	  	Client.socket.emit('registrieren', email, username, password);
+	    return true;
+	}
+});
+
 // Username Form
-$("#username-form").submit(function() {
+$("#login-form").submit(function() {
 
-  var input = $('#username').val();
-
-  if(input == "") {
-    $("#warning").text("Der Nickname darf nicht leer sein!");
+  var logusername = $('#username').val();
+  var logpassword = $('#password').val();
+  
+  if(logusername == "" || logpassword == "") {
+    $("#warning").text("Der Username oder Password darf nicht leer sein!");
     $("#warning").show();
     return false;
 
-  } else if(input.length < 4 || input.length > 16) {
-    $("#warning").text("Der Nickname muss zwischen 4 und 16 Zeichen haben!");
+  } else if(logusername.length < 4 || logusername.length > 16 && logpassword.length < 4) {
+    $("#warning").text("Der Nickname und Password muss mindestens 4 zeichen enthalten");
     $("#warning").show();
     return false;
 
   } else {
+
 
   	$('#iframeAudio').remove();
     letsgo.play();
@@ -60,8 +100,8 @@ $("#username-form").submit(function() {
 	soundOffLimit.play();
 
   	// ask for new Player
-    username = input;
-    Client.socket.emit('new user', input);
+    username = logusername;
+    Client.socket.emit('login user', logusername, logpassword);
 
     // get score
     Client.socket.emit('score', { death: undefined, player: undefined });
@@ -77,6 +117,7 @@ $("#username-form").submit(function() {
   }
 
 });
+
 
 // Chat Form
 $("#chat-form").submit(function(){
@@ -94,63 +135,67 @@ $("#chat-form").submit(function(){
 	return false;
 });
 
+
 $(document).keydown(function(ep) 
 {
-
-
-
-	// Enter pressed => show chat window   
-	if(ep.which == 81 && Game.self != undefined && keyDown == false ) 
+	if(Game.controls.enabled)
 	{
-		
-		keyDown = true;
-		ep.preventDefault();
-
-		$("#statistik").toggle();
-		$('#statistik').removeClass('hide');
-
-		$("#nameblue").fadeIn();
-		$("#namered").fadeIn();
-
-	}
-
-	$(document).keyup(function(ep) {
-		if(keyDown == true && ep.which == 81)
+		// Enter pressed => show chat window   
+		if(ep.which == 81 && Game.self != undefined && keyDown == false ) 
 		{
-			$('#statistik').addClass('hide');
-			keyDown = false;
+			
+			keyDown = true;
+			ep.preventDefault();
+
+			$("#statistik").toggle();
+			$('#statistik').removeClass('hide');
+
+			$("#nameblue").fadeIn();
+			$("#namered").fadeIn();
 
 		}
-	});
+
+		$(document).keyup(function(ep) {
+			if(keyDown == true && ep.which == 81)
+			{
+				$('#statistik').addClass('hide');
+				keyDown = false;
+
+			}
+		});
+	}
+
 });
 
 
 // Statistik Input
 $(document).keydown(function(e) {
 
-	// Enter pressed => show chat window   
-	if(e.which == 13 && Game.self != undefined && $("#chat-form").css('display') == 'none' ) 
+	if(Game.controls.enabled)
 	{
-		e.preventDefault();
+		// Enter pressed => show chat window   
+		if(e.which == 13 && Game.self != undefined && $("#chat-form").css('display') == 'none' ) 
+		{
+			e.preventDefault();
 
-		// remove key eventlisteners
-		Game.controls.removeListeners();
+			// remove key eventlisteners
+			Game.controls.removeListeners();
 
-		$("#chat-form").show();
-		$("#m").focus();
-		$("#messages").fadeIn();
+			$("#chat-form").show();
+			$("#m").focus();
+			$("#messages").fadeIn();
 
-	} 
-	else if(e.which == 13 && !$('#m').val() && Game.self != undefined && $("#chat-form").css('display') != 'none')
-	{
-		e.preventDefault();
+		} 
+		else if(e.which == 13 && !$('#m').val() && Game.self != undefined && $("#chat-form").css('display') != 'none')
+		{
+			e.preventDefault();
 
-		// readd key eventlisteners
-		Game.controls.readdListeners();
+			// readd key eventlisteners
+			Game.controls.readdListeners();
 
-		$("#chat-form").hide();
+			$("#chat-form").hide();
+		}
 	}
-
 
 });
 

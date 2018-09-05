@@ -9,7 +9,47 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var THREE = require('three');
+var mysql = require('mysql'); 
+var nodemailer    = require('nodemailer');
 
+//Create Database Connection
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "root",
+});
+
+// Create Database
+con.connect(function(err) {
+  if (err) throw err;
+  	var createDatabase 	= "user";
+	var createTable 	= "CREATE TABLE IF NOT EXISTS users (email VARCHAR(255) not null, username VARCHAR(255) not null, password VARCHAR(255) not null)";
+
+	//Create Database
+	con.query('CREATE DATABASE IF NOT EXISTS ??', createDatabase, function(err, results) {
+	  if (err) {
+	    console.log('error in creating database', err);
+	    return;
+	  }
+		  //Select Database
+		con.changeUser({
+	    	database : createDatabase
+				  }, function(err) {
+				    if (err) {
+				      console.log('error in changing database', err);
+				      return;
+				    }
+			//Create Table
+			con.query(createTable, function(err) {
+		      if (err) {
+		        console.log('error in creating tables', err);
+		        return;
+		    	}
+		    });
+  		});
+	});
+	console.log("Connected!");
+});
 
 // Static Resources Path
 app.use(express.static(path.join(__dirname, 'public')));
@@ -49,39 +89,127 @@ io.on('connection', function(socket)
 	};
 	socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: "spectate" } );
 
+
 	// new player
 	//----------------------------------------------------------------------------------------
-	socket.on('new user', function(username)
+	socket.on('login user', function(username, password) 
 	{
-		// set username
-		socket.player.username = username;
+		
+		var res = [];
+		var selectUser = "SELECT * FROM users WHERE username = '" + username + "'";
+	  	var selectPassword = "SELECT * FROM users WHERE password = '" + password + "'";
 
-		// add player to team with less players
-		if(server.teamRed == server.teamBlue)
-		{
-			socket.player.team = "red";
-			server.teamRed++;
-		}
-		else if(server.teamRed > server.teamBlue)
-		{
-			socket.player.team = "blue";
-			server.teamBlue++;
-		}
-		else 
-		{
-			socket.player.team = "red";
-			server.teamRed++;
-		}
-		socket.player.kill = 0;
-		socket.player.death = 0;
+	  	// find user
+	  	con.query(selectUser,  function(error, result, field)
+	  	{
+	  		// on error
+			if (error) 
+			{
+			    console.log(error);
+			    socket.write("fail internal error"+"\r\n");
+			}
 
-		socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
-		socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
-		socket.broadcast.emit('new user', socket.player);
-		socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
+			// on result
+			if (result.length  > 0) 
+			{
+				// find password
+			    con.query(selectPassword,  function(errorr, results, fieldo)
+			    {
+			    	// on error
+					if (errorr) {
+			    		console.log(errorr);
+			    		socket.write("fail internal error"+"\r\n");
+					}
+
+					// on result
+					if (results.length  > 0) 
+					{
+
+						// found user and password
+
+						// set username
+						socket.player.username = username;
+
+						// add player to team with less players
+						if(server.teamRed == server.teamBlue)
+						{
+							socket.player.team = "red";
+							server.teamRed++;
+						}
+						else if(server.teamRed > server.teamBlue)
+						{
+							socket.player.team = "blue";
+							server.teamBlue++;
+						}
+						else 
+						{
+							socket.player.team = "red";
+							server.teamRed++;
+						}
+						socket.player.kill = 0;
+						socket.player.death = 0;
+
+						socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
+						socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
+						socket.broadcast.emit('new user', socket.player);
+						socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
+
+					} else {
+			    		console.log('Password is wrong');
+					}
+				});
+
+			} else {
+				console.log("User does not exist");
+			}
+		});
 	});
 
-	
+
+	// registration
+	//----------------------------------------------------------------------------------------
+	socket.on ('registrieren', function(email,username,password){
+
+	  	var selectUser = "SELECT * FROM users WHERE username = '" + username + "'";
+	  	var selectEmail = "SELECT * FROM users WHERE email = '" + email + "'";
+	  	var createUser = "INSERT INTO users(email,username,password) VALUES ('"+email+"','"+username+"','"+password+"')";
+		  	
+	  	con.query(selectUser,  function(error, result, field){
+			if (error) {
+			    console.log(error);
+			    socket.write("fail internal error"+"\r\n");
+			}
+			if (result.length  > 0) {
+			    console.log('fail exist user');
+			    socket.write("fail user already exists"+"\r\n");
+
+			} else {
+				con.query(selectEmail,  function(errorr, results, fieldo){
+					if (errorr) {
+			    		console.log(errorr);
+			    		socket.write("fail internal error"+"\r\n");
+					}
+					if (results.length  > 0) {
+					    console.log('fail exist email');
+					    socket.write("fail email already exists"+"\r\n");
+
+					} else {
+			    		console.log('insert');
+			    		sendMail(username,email);
+			    		con.query(createUser, function(errorr) {
+						if (errorr) 
+					    	throw errorr;  
+						});
+					}
+				});
+
+			 socket.write("success"+"\r\n");
+			}
+
+			console.log(result);
+		}); 	 
+	});
+
 
 	// movement
 	//----------------------------------------------------------------------------------------
@@ -204,4 +332,41 @@ function getPlayerById( id )
 
 	if(player)
 		return player;
+}
+
+// Send Email
+function sendMail(user,email)
+{
+	// create reusable transporter object using the default SMTP transport
+  	var transporter = nodemailer.createTransport({
+	    host: 'smtp.gmail.com',
+	    port: 465,
+	    secure: true, // secure:true for port 465, secure:false for port 587
+	    auth: {
+	        user: 'hsosrma@gmail.com', // generated ethereal user
+	        pass: '5tausend',  // generated ethereal password
+	    },
+	    tls:{
+	      rejectUnauthorized:false
+	    }
+  	});
+
+  	var text_anmeldung = 'Guten Tag ' + user + ',\n\nSie haben sich erfolgreich zu The Game registriert!\n\nWir wünschen Ihnen dabei viel Spaß und Erfolg!';
+	var teilnehmer = '\n\nHinweis: Diese Email wurde automatisch erzeugt und versendet.\n\nMit freundlichen Grüßen\nDas The Game-Team';
+	// setup email data with unicode symbols
+	var mailOptions = {
+	    from: '"The Game-Team" <hsosrma@gmail.com>', // sender address
+	    to: email, // list of receivers
+	    subject: 'The Game - Sie haben sich erfolgreich registriert', // Subject line
+	    text: text_anmeldung + teilnehmer, // plain text body
+	};
+
+  // send mail with defined transport object
+  	transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+        	return console.log(error);
+        }
+        console.log('Message sent: %s', info.messageId);
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+	});
 }

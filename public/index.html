@@ -12,33 +12,105 @@
   <!-- Body -->
   <body>
 
-    <!-- Username Layer -->
-    <div class="username-layer">
-
       <!-- Loading Progress Bar -->
       <div class="progress">
         <div id="loading-progress" class="progress-bar" role="progressbar" style="width: 25%; margin-bottom: auto;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Loading: 0%</div>
       </div>
 
+    <!-- Username Layer -->
+    <div class="username-layer" id="login">
+
       <div class="container d-flex align-items-center flex-column justify-content-center h-100" style="">
-        <form id="username-form" action="" style="">
+        <form id="login-form" action="" style="">
           <h1 class="display-1">ThreeJS Tournament</h1>
+
           <div class="form-group row">
-            <div class="col-md-1"></div>
-            <div class="col-md-6" style="padding: 0px 0px 0px 15px">
-              <input id="username" autocomplete="off" class="form-control form-control-lg" type="text" placeholder="Gib deinen Nickname ein">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+              <input id="username" type="username" class="form-control" id="exampleInputEmail1" placeholder="Username">
             </div>
-            <div class="col-md-4" style="padding: 0px 15px 0px 0px">
-              <button class="btn btn-primary btn-lg" style="width: 100%">Send</button>
-            </div>
-            <div class="col-md-1"></div>
+            <div class="col-md-3"></div>
           </div>
+
+          <div class="form-group row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+              <input id="password" type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+            </div>
+            <div class="col-md-3"></div>
+          </div>
+
+          <div class="form-group row">
+            <div class="col-md-3"></div>
+            <div class="col-md-3">
+              <button type="submit" style="width: 100%" class="btn btn-primary btn-lg">Login</button>
+            </div>
+            <div class="col-md-3">
+              <div style="width: 100%" id="registrieren" class="btn btn-success btn-lg">Registrieren</div>
+            </div>
+            <div class="col-md-3"></div>
+          </div>
+
           <div class="row">
             <div class="col-md-3"></div>
             <div class="col-md-6"><div id="warning" class="alert alert-danger" role="alert"></div></div>
             <div class="col-md-3"></div>
           </div>
         </form>
+      </div>
+    </div>
+
+      <!-- Registration -->
+      <div class="username-layer" id="register">
+      <div class="container d-flex align-items-center flex-column justify-content-center h-100" style="">
+
+        <form id="register-form">
+
+          <h1 class="display-1">ThreeJS Tournament</h1>
+
+          <div class="form-group row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+              <input id="newemail" type="email" class="form-control"  placeholder="Email">
+            </div>
+            <div class="col-md-3"></div>
+          </div>
+
+          <div class="form-group row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+              <input id="newusername" type="username" class="form-control"  placeholder="Username">
+            </div>
+            <div class="col-md-3"></div>
+          </div>
+
+          <div class="form-group row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+              <input id="newepassword" type="password" class="form-control" placeholder="Password">
+            </div>
+            <div class="col-md-3"></div>
+          </div>
+
+          <div class="form-group row">
+            <div class="col-md-3"></div>
+            <div class="col-md-3">
+              <button id="acceptRegister" type="submit" style="width: 100%" class="btn btn-primary btn-lg">Registrieren</button>
+            </div>
+            <div class="col-md-3">
+              <div id="zurueck" style="width: 100%" class="btn btn-warning btn-lg">Zurück</div>
+            </div>
+            <div class="col-md-3"></div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6"><div id="regwarn" class="alert alert-danger" role="alert"></div></div>
+            <div class="col-md-3"></div>
+          </div>
+
+        </form>
+
       </div>
     </div>
 
