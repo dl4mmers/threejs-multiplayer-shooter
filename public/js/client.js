@@ -138,7 +138,7 @@ $("#chat-form").submit(function(){
 
 $(document).keydown(function(ep) 
 {
-	if(Game.controls.enabled)
+	if(Game.controls && Game.controls.enabled)
 	{
 		// Enter pressed => show chat window   
 		if(ep.which == 81 && Game.self != undefined && keyDown == false ) 
@@ -171,7 +171,7 @@ $(document).keydown(function(ep)
 // Statistik Input
 $(document).keydown(function(e) {
 
-	if(Game.controls.enabled)
+	if(Game.controls && Game.controls.enabled)
 	{
 		// Enter pressed => show chat window   
 		if(e.which == 13 && Game.self != undefined && $("#chat-form").css('display') == 'none' ) 
