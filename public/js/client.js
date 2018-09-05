@@ -141,6 +141,7 @@ $(document).keydown(function(ep)
 	if(Game.controls && Game.controls.enabled)
 	{
 		// Enter pressed => show chat window   
+		// test
 		if(ep.which == 81 && Game.self != undefined && keyDown == false ) 
 		{
 			
