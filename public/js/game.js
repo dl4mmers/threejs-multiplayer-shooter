@@ -139,7 +139,7 @@ Game.animate = function ()
 
 	if( (Game.loadingLevel + Game.loadingCollision) == 100 && !Game.finishedLoading ){
 		Game.finishedLoading = true;
-		$('#pic').hide();
+		//$('#pic').hide();
 	}
 
 	// update scene
