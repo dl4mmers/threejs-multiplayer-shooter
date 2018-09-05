@@ -5,25 +5,24 @@
 // Init
 Client = {};
 Client.socket = io();
+
 $("#chat-form").hide();
 $("#warning").hide();
 $("#username").focus();
 $("#statistik").hide();
 $('#statistik').addClass('hide');
+
 var username;
 var mySound;
 var letsgo;
 var allplayers;
 var keyDown = false;
-mySound = new Audio('audio/ut2004_level3.mp3');
-mySound.volume = 0.03;
-mySound.autoplay = true;
 var mySS;
 var myAudio;
 
 
-var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-if(!isChrome){ $('#iframeAudio').remove() }
+//var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+//if(!isChrome){  }
 
 // Forms
 //---------------------------------------------------
@@ -45,9 +44,8 @@ $("#username-form").submit(function() {
 
   } else {
 
-
+  	$('#iframeAudio').remove();
     stopsound();
-    mySound.autoplay = false;
     letsgo = new Audio('audio/lets_go.mp3'); 
     letsgo.play();
     mySS = new Audio('audio/Off Limits.wav'); 
