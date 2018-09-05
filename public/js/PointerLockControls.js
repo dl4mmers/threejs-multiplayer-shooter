@@ -202,8 +202,8 @@
         //quat.multiplyVector3(inputVelocity);
 
         // Add to the object
-        velocity.x = inputVelocity.x*9;
-        velocity.z = inputVelocity.z*9;
+        velocity.x = inputVelocity.x*15;
+        velocity.z = inputVelocity.z*15;
 
 
 
