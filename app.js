@@ -73,7 +73,7 @@ var kill = 0;
 var death = 0;
 
 // Open port
-server.listen(80, 'localhost' ,function(){
+server.listen(80, '192.168.43.139' ,function(){
   console.log('listening on *:80');
 });
 
@@ -284,7 +284,6 @@ io.on('connection', function(socket)
 	//----------------------------------------------------------------------------------------
 	socket.on('chat message', function(msg)
 	{
-		console.log("bin hier");
 		io.emit('chat message', msg);
 	});
 

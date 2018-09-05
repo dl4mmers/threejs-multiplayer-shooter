@@ -100,7 +100,21 @@ Game.initThree = function()
 
 	// Renderer
 	Game.renderer = new THREE.WebGLRenderer( { antialias: true } );
-	Game.renderer.setPixelRatio( window.devicePixelRatio );
+
+	var winWidth = window.innerWidth;
+	var winHeight = window.innerHeight;
+
+	if(winWidth > 1920 && winHeight > 1080)
+	{
+		Game.renderer.setPixelRatio( window.devicePixelRatio/4 );
+		console.log("4K");
+	}
+	else
+	{
+		Game.renderer.setPixelRatio( window.devicePixelRatio );
+		console.log("HD");
+	}
+
 	Game.renderer.setSize( window.innerWidth, window.innerHeight );
 	document.body.appendChild( Game.renderer.domElement );
 
@@ -177,11 +191,27 @@ Game.updateScene = function( delta )
 		Game.sphereBody2.position.y+=3;
 	}
 
+    if(balls.length > 30)
+    {
+    	// remove from scene / world
+		Game.world.remove(balls[0]);
+		Game.scene.remove(ballMeshes[0]);
+
+		// pop first element
+		var index1 = balls.indexOf(balls[0]);
+		var index2 = ballMeshes.indexOf(ballMeshes[0]);
+		if (index1 > -1) { balls.splice(index1, 1); }
+		if (index2 > -1) { ballMeshes.splice(index2, 1 ); }
+    }
+
     // Update ball positions
     for(var i=0; i < balls.length; i++)
     {
         
+
+
     	// check distance from ball to players
+    	/*
     	var minDist = 1000;
     	var b = ballMeshes[i].position;
 		Game.playerMap.forEach( function(value, key) {
@@ -198,7 +228,7 @@ Game.updateScene = function( delta )
 			minDist = selfDist;
 
 		// check distance to nearest player and remove if dist > 100
-		if(minDist > 100)
+		if(minDist > 60)
 		{
 
 			// remove from scene / world
@@ -213,11 +243,11 @@ Game.updateScene = function( delta )
 
 		} 
 		else 
-		{
+		{*/
 			// set position
-			ballMeshes[i].position.copy(balls[i].position);
-        	ballMeshes[i].quaternion.copy(balls[i].quaternion);
-		}
+		ballMeshes[i].position.copy(balls[i].position);
+    	ballMeshes[i].quaternion.copy(balls[i].quaternion);
+		//}
 
     }
 
