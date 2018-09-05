@@ -108,59 +108,61 @@ io.on('connection', function(socket)
 			    console.log(error);
 			    socket.write("fail internal error"+"\r\n");
 			}
-
-			// on result
-			if (result.length  > 0) 
+			else
 			{
-				// find password
-			    con.query(selectPassword,  function(errorr, results, fieldo)
-			    {
-			    	// on error
-					if (errorr) {
-			    		console.log(errorr);
-			    		socket.write("fail internal error"+"\r\n");
-					}
+			// on result
+				if (result.length  > 0) 
+				{
+					// find password
+				    con.query(selectPassword,  function(errorr, results, fieldo)
+				    {
+				    	// on error
+						if (errorr) {
+				    		console.log(errorr);
+				    		socket.write("fail internal error"+"\r\n");
+						}else{
 
-					// on result
-					if (results.length  > 0) 
-					{
+							// on result
+							if (results.length  > 0) 
+							{
 
-						// found user and password
+								// found user and password
 
-						// set username
-						socket.player.username = username;
+								// set username
+								socket.player.username = username;
 
-						// add player to team with less players
-						if(server.teamRed == server.teamBlue)
-						{
-							socket.player.team = "red";
-							server.teamRed++;
+								// add player to team with less players
+								if(server.teamRed == server.teamBlue)
+								{
+									socket.player.team = "red";
+									server.teamRed++;
+								}
+								else if(server.teamRed > server.teamBlue)
+								{
+									socket.player.team = "blue";
+									server.teamBlue++;
+								}
+								else 
+								{
+									socket.player.team = "red";
+									server.teamRed++;
+								}
+								socket.player.kill = 0;
+								socket.player.death = 0;
+								socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
+								socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
+								socket.broadcast.emit('new user', socket.player);
+								socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
+
+							} else {
+					    		console.log('Password is wrong');
+							}
 						}
-						else if(server.teamRed > server.teamBlue)
-						{
-							socket.player.team = "blue";
-							server.teamBlue++;
-						}
-						else 
-						{
-							socket.player.team = "red";
-							server.teamRed++;
-						}
-						socket.player.kill = 0;
-						socket.player.death = 0;
+					});
 
-						socket.emit('getAllPlayer', { allPlayers: getAllPlayers(), kills: socket.player.kill, death: socket.player.death, selfId: socket.player.id, team: socket.player.team });
-						socket.emit('allplayers', { allPlayers: getAllPlayers(), selfId: socket.player.id, team: socket.player.team } );
-						socket.broadcast.emit('new user', socket.player);
-						socket.broadcast.emit('chat message', "Server: Spieler " + socket.player.username + " hat sich eingeloggt.");
-
-					} else {
-			    		console.log('Password is wrong');
-					}
-				});
-
-			} else {
-				console.log("User does not exist");
+				} else {
+					console.log("User does not exist");
+				}
 			}
 		});
 	});

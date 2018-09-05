@@ -87,32 +87,10 @@ $("#login-form").submit(function() {
 
   } else {
 
-
-  	$('#iframeAudio').remove();
-    letsgo.play();
-
-    soundOffLimit.volume = 0.03; 
-    soundOffLimit.addEventListener('ended', function() {
-    	soundOffLimit.volume = 0.03; 
-	    this.play();
-	}, false);
-	
-	soundOffLimit.play();
+  	Client.socket.emit('login user', logusername, logpassword);
 
   	// ask for new Player
     username = logusername;
-    Client.socket.emit('login user', logusername, logpassword);
-
-    // get score
-    Client.socket.emit('score', { death: undefined, player: undefined });
-
-    // edit gui
-    $('#username').val('');
-    $(".username-layer").hide();
-    $('#messages').append($('<li>').text("Willkommen auf dem ThreeJS Multiplayer Server " + username + "!"));
-    $('canvas').css("filter", "blur(0px)");
-    $('canvas').css("transform", "scale(1.0)");
-
     return false;
   }
 
@@ -322,6 +300,24 @@ Client.socket.on('allplayers',function(data)
 	// player 
 	else 
 	{
+		// sounds
+  		$('#iframeAudio').remove();
+	    letsgo.play();
+
+	    soundOffLimit.volume = 0.03; 
+	    soundOffLimit.addEventListener('ended', function() { soundOffLimit.volume = 0.03; this.play(); }, false);
+		soundOffLimit.play();
+
+	    // get score
+	    Client.socket.emit('score', { death: undefined, player: undefined });
+
+	    // edit gui
+	    $('#username').val('');
+	    $(".username-layer").hide();
+	    $('#messages').append($('<li>').text("Willkommen auf dem ThreeJS Multiplayer Server " + username + "!"));
+	    $('canvas').css("filter", "blur(0px)");
+	    $('canvas').css("transform", "scale(1.0)");
+
 		// set camera and id
 		Game.camera.position.set(0, 2, 0);
 	    Game.self = data.selfId;
