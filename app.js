@@ -73,7 +73,7 @@ var kill = 0;
 var death = 0;
 
 // Open port
-server.listen(80, '192.168.43.139' ,function(){
+server.listen(80, 'localhost' ,function(){
   console.log('listening on *:80');
 });
 
